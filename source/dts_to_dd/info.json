@@ -1,9 +1,9 @@
 {
     "author": "Josh.5",
     "description": "Convert DTS streams into Dolby Digital",
-    "icon": "",
+    "icon": "https://raw.githubusercontent.com/Josh5/unmanic-plugins/master/source/dts_to_dd/icon.png",
     "id": "dts_to_dd",
     "name": "Convert DTS to Dolby Digital",
     "tags": "audio,worker",
-    "version": "0.0.1~beta1"
+    "version": "0.0.1~beta2"
 }
