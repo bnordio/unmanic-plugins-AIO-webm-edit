@@ -5,5 +5,5 @@
     "id": "dts_to_dd",
     "name": "Convert DTS to Dolby Digital",
     "tags": "audio,worker",
-    "version": "0.0.1~beta2"
+    "version": "0.0.1~beta3"
 }

@@ -70,14 +70,14 @@ def get_file_probe(file_path):
 
 def should_process_dts_stream(probe_stream):
     settings = Settings()
-    if probe_stream.get('profile').upper() == 'DTS':
+    if probe_stream.get('profile').lower() == 'dts':
         # Process all DTS tracks
         return True
 
-    if probe_stream.get('profile').upper() == 'DTS-HD MA':
-        # This stream is 
-        if not settings.get_setting('destination downmix_dts_hd_ma'):
-            return False
+    if probe_stream.get('profile').lower() == 'dts-hd ma':
+        # This stream is DTS-HD Master Audio. Check if configured to downmix Master Audio
+        if settings.get_setting('downmix_dts_hd_ma'):
+            return True
 
     # Default to 
     return False
@@ -201,6 +201,9 @@ def on_library_management_file_test(data):
         # Mark this file to be added to the pending tasks
         data['add_file_to_pending_tasks'] = True
         logger.debug("File '{}' should be added to task list. One or more of the audio streams are DTS.".format(
+            data.get('path')))
+    else:
+        logger.debug("File '{}' does not contain DTS audio streams.".format(
             data.get('path')))
 
     return data
