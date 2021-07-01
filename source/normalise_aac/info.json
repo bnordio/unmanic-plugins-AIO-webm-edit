@@ -1,0 +1,9 @@
+{
+    "author": "Josh.5",
+    "description": "Normalise the audio of AAC audio streams. This plugin will only process files with AAC streams.",
+    "icon": "https://raw.githubusercontent.com/Josh5/unmanic-plugins/master/source/normalise_aac/icon.png",
+    "id": "normalise_aac",
+    "name": "Normalise AAC",
+    "tags": "audio,worker",
+    "version": "0.0.1"
+}
