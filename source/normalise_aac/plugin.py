@@ -24,9 +24,11 @@
 import logging
 import mimetypes
 import os
+from configparser import NoSectionError, NoOptionError
 
 from unmanic.libs import unffmpeg
 from unmanic.libs.unplugins.settings import PluginSettings
+from unmanic.libs.directoryinfo import UnmanicDirectoryInfo
 
 # Configure plugin logger
 logger = logging.getLogger("Unmanic.Plugin.normalise_aac")
@@ -95,22 +97,33 @@ def audio_filtergraph():
     return 'loudnorm=I={}:LRA={}:TP={}'.format(i, lra, tp)
 
 
-def stream_normalised(probe_stream):
+def file_already_normalised(path):
     settings = Settings()
+    directory_info = UnmanicDirectoryInfo(os.path.dirname(path))
 
-    stream_tags = probe_stream.get('tags')
-    if 'unmanic:normalise_aac' in probe_stream.get('tags'):
+    try:
+        previous_loudnorm_filtergraph = directory_info.get('normalise_aac', os.path.basename(path))
+    except NoSectionError as e:
+        previous_loudnorm_filtergraph = ''
+    except NoOptionError as e:
+        previous_loudnorm_filtergraph = ''
+    except Exception as e:
+        logger.debug("Unknown exception {}.".format(e))
+        previous_loudnorm_filtergraph = ''
+
+    if previous_loudnorm_filtergraph:
+        logger.debug("File's stream was previously normalised with {}.".format(previous_loudnorm_filtergraph))
         # This stream already has been normalised
         if settings.get_setting('ignore_previously_processed'):
+            logger.debug("Plugin configured to ignore previously normalised streams")
             return True
-        elif stream_tags.get('unmanic:normalise_aac') == audio_filtergraph():
-            # The previously normalised stream matches what is already confiured
-            return True
-        else:
+        elif audio_filtergraph() in previous_loudnorm_filtergraph:
+            # The previously normalised stream matches what is already configured
             logger.debug(
-                "File's stream was previously normalised with {}.".format(stream_tags.get('unmanic:normalise_aac')))
+                "Stream was previously normalised with the same settings as what the plugin is currently configured")
+            return True
 
-    # Default to
+    # Default to...
     return False
 
 
@@ -149,9 +162,6 @@ def get_stream_mapping(file_probe_streams, testing=False):
         # Map the audio streams
         if probe_stream.get('codec_type').lower() == "audio":
             # Check if we should just copy this audio stream or convert it...
-            copy_stream = True
-            if probe_stream.get('codec_name').lower() == "aac":
-                if not stream_normalised(probe_stream):
                     copy_stream = False
 
             if copy_stream:
@@ -175,9 +185,6 @@ def get_stream_mapping(file_probe_streams, testing=False):
                 stream_codec += [
                     '-c:a:{}'.format(audio_stream_count), 'aac',
                     '-filter:a:{}'.format(audio_stream_count), audio_filtergraph(),
-                    '-metadata:s:a:{}'.format(audio_stream_count),
-                    "unmanic:normalise_aac='{}'".format(audio_filtergraph()),
-
                 ]
                 audio_stream_count += 1
                 continue
@@ -204,6 +211,9 @@ def on_library_management_file_test(data):
         # File probe failed, skip the rest of this test
         return data
 
+    if file_already_normalised(data.get('path')):
+        found_streams = False
+    else:
     found_streams, stream_mapping, stream_codec = get_stream_mapping(file_probe.get('streams'), testing=True)
 
     if found_streams:
@@ -244,12 +254,14 @@ def on_worker_process(data):
     if not file_probe:
         # File probe failed, skip the rest of this test
         return data
-    file_probe_streams = file_probe.get('streams')
 
+    if file_already_normalised(data.get('file_in')):
+        exec_ffmpeg = False
+    else:
     # Get stream mapping
-    found_streams, stream_mapping, stream_codec = get_stream_mapping(file_probe.get('streams'))
+        exec_ffmpeg, stream_mapping, stream_codec = get_stream_mapping(file_probe.get('streams'))
 
-    if found_streams:
+    if exec_ffmpeg:
         # File has streams to normalise
         data['exec_ffmpeg'] = True
         # Build ffmpeg args and add them to the return data
@@ -269,5 +281,34 @@ def on_worker_process(data):
         data['file_out'] = "{}{}".format(split_file_out[0], split_file_in[1])
 
         data['ffmpeg_args'] += ['-y', data.get('file_out')]
+
+    return data
+
+
+def on_postprocessor_task_results(data):
+    """
+    Runner function - provides a means for additional postprocessor functions based on the task success.
+
+    The 'data' object argument includes:
+        task_processing_success         - Boolean, did all task processes complete successfully.
+        file_move_processes_success     - Boolean, did all postprocessor movement tasks complete successfully.
+        destination_files               - List containing all file paths created by postprocessor file movements.
+        source_data                     - Dictionary containing data pertaining to the original source file.
+
+    :param data:
+    :return:
+
+    """
+    # We only care that the task completed successfully.
+    # If a file move was unsuccessful, then it would not have been added to the destination_files list
+    if not data.get('task_processing_success'):
+        return data
+
+    # Loop over the destination_files list and update the directory info file for each one
+    for destination_file in data.get('destination_files'):
+        directory_info = UnmanicDirectoryInfo(os.path.dirname(destination_file))
+        directory_info.set('normalise_aac', os.path.basename(destination_file), audio_filtergraph())
+        directory_info.save()
+        logger.debug("Normalise AAC info written for '{}'.".format(destination_file))
 
     return data
