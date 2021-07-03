@@ -239,7 +239,7 @@ def on_worker_process(data):
     found_dts_streams, stream_mapping, stream_codec = get_stream_mapping(file_probe.get('streams'))
 
     if found_dts_streams:
-        # File does not contain DTS streams
+        # File does contain DTS streams
         data['exec_ffmpeg'] = True
         # Build ffmpeg args and add them to the return data
         data['ffmpeg_args'] = [
