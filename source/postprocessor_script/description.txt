@@ -102,4 +102,3 @@ user@x.x.x.x:/library/
 [code]/path/to/script.sh[/code]
 [color=green][b]Arguments to pass to the command or script.[/b][/color]
 [code]--all_files='{output_files}' --original_file_size={source_file_size}[/code]
-
