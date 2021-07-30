@@ -1,0 +1,9 @@
+{
+    "author": "Josh.5",
+    "description": "Ensure all video streams are encoded with the VP9 codec using the libvpx-vp9 encoder.",
+    "icon": "https://raw.githubusercontent.com/Josh5/unmanic-plugins/master/source/encoder_video_libvpx_vp9/icon.png",
+    "id": "encoder_video_libvpx_vp9",
+    "name": "Video Encoder VP9 - libvpx-vp9",
+    "tags": "video,encoder,worker",
+    "version": "0.0.1"
+}
