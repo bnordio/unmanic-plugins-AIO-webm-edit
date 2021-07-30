@@ -5,5 +5,5 @@
     "id": "encoder_video_libvpx_vp9",
     "name": "Video Encoder VP9 - libvpx-vp9",
     "tags": "video,encoder,worker",
-    "version": "0.0.1"
+    "version": "0.0.2"
 }

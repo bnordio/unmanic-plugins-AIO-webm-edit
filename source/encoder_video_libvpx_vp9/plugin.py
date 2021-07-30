@@ -21,7 +21,6 @@
         If not, see <https://www.gnu.org/licenses/>.
 
 """
-import json
 import logging
 import os
 import sys
@@ -38,7 +37,7 @@ except ImportError:
     from lib.ffmpeg_stream_mapping import FfmpegStreamMapper
 
 # Configure plugin logger
-logger = logging.getLogger("Unmanic.Plugin.dts_to_dd")
+logger = logging.getLogger("Unmanic.Plugin.encoder_video_libvpx_vp9")
 
 
 class Settings(PluginSettings):
@@ -246,7 +245,7 @@ def on_worker_process(data):
 
     if mapper.streams_need_processing():
         mapper.streams_need_processing()
-        # File does not contain DTS streams
+        # File does not contain streams to process
         data['exec_ffmpeg'] = True
         # Build ffmpeg args and add them to the return data
         data['ffmpeg_args'] = [
@@ -256,7 +255,7 @@ def on_worker_process(data):
             '-loglevel',
             'info',
         ]
-        # ADd the stream mapping and the encoding args
+        # Add the stream mapping and the encoding args
         data['ffmpeg_args'] += mapper.get_stream_mapping()
         data['ffmpeg_args'] += mapper.get_stream_encoding()
 
@@ -266,7 +265,5 @@ def on_worker_process(data):
         data['file_out'] = "{}{}".format(split_file_out[0], split_file_in[1])
 
         data['ffmpeg_args'] += ['-y', data.get('file_out')]
-
-    print(data['ffmpeg_args'])
 
     return data
