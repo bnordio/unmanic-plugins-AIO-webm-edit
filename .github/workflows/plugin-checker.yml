@@ -23,6 +23,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+        submodules: 'recursive'
 
     #  _____                            ____                           _   
     # | ____|_ __  ___ _   _ _ __ ___  |  _ \ _ __ ___  ___  ___ _ __ | |_ 
@@ -234,6 +235,8 @@ jobs:
     - name: Checkout
       if: steps.previous_jobs_success.outputs.IS_SUCCESS == 'true'
       uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
 
     # Ensure repo is checked out
     - name: Check repo for config file
