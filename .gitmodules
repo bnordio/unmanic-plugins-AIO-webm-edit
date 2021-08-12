@@ -1,3 +1,6 @@
 [submodule "source/encoder_video_h264_libx264"]
 	path = source/encoder_video_h264_libx264
 	url = git@github.com:Josh5/unmanic.plugin.encoder_video_h264_libx264.git
+[submodule "source/encoder_video_hevc_nvenc"]
+	path = source/encoder_video_hevc_nvenc
+	url = git@github.com:Josh5/unmanic.plugin.encoder_video_hevc_nvenc.git
