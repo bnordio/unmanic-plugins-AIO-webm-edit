@@ -10,3 +10,6 @@
 [submodule "source/encoder_video_h264_nvenc"]
 	path = source/encoder_video_h264_nvenc
 	url = git@github.com:Josh5/unmanic.plugin.encoder_video_h264_nvenc.git
+[submodule "source/postprocessor_script"]
+	path = source/postprocessor_script
+	url = git@github.com:Josh5/unmanic.plugin.postprocessor_script.git
