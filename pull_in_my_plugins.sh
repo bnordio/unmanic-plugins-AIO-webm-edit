@@ -7,6 +7,7 @@ plugin_ids=(
     "encoder_video_h264_nvenc"
     "encoder_video_hevc_libx265"
     "encoder_video_hevc_nvenc"
+    "postprocessor_script"
 )
 
 pushd "${repo_root_path}" &> /dev/null
