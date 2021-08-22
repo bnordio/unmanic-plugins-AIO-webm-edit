@@ -4,7 +4,9 @@ repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
 plugin_ids=(
     "encoder_video_h264_libx264"
+    "encoder_video_h264_nvenc"
     "encoder_video_hevc_libx265"
+    "encoder_video_hevc_nvenc"
 )
 
 pushd "${repo_root_path}" &> /dev/null
