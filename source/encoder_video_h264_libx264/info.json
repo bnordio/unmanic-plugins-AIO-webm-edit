@@ -1,0 +1,12 @@
+{
+    "author": "Josh.5",
+    "compatibility": [
+        1
+    ],
+    "description": "Ensure all video streams are encoded with the H264 codec using the libx264 encoder.",
+    "icon": "",
+    "id": "encoder_video_h264_libx264",
+    "name": "Video Encoder H264 - libx264",
+    "tags": "video,encoder,ffmpeg",
+    "version": "0.0.1"
+}
