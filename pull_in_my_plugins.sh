@@ -8,6 +8,7 @@ plugin_ids=(
     "encoder_video_hevc_libx265"
     "encoder_video_hevc_nvenc"
     "mover2"
+    "path_ignore"
     "postprocessor_script"
     "video_trim"
 )
