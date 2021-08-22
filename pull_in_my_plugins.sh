@@ -7,6 +7,7 @@ plugin_ids=(
     "encoder_video_h264_nvenc"
     "encoder_video_hevc_libx265"
     "encoder_video_hevc_nvenc"
+    "mover2"
     "postprocessor_script"
 )
 
