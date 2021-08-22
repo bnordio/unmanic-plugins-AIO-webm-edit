@@ -4,9 +4,9 @@
         1
     ],
     "description": "Ensure all video streams are encoded with the H264 codec using the libx264 encoder.",
-    "icon": "",
+    "icon": "https://raw.githubusercontent.com/Josh5/unmanic.plugin.encoder_video_h264_libx264/master/icon.png",
     "id": "encoder_video_h264_libx264",
     "name": "Video Encoder H264 - libx264",
     "tags": "video,encoder,ffmpeg",
-    "version": "0.0.1"
+    "version": "0.0.2"
 }
