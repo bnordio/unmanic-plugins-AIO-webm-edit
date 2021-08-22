@@ -1,4 +1,13 @@
 #!/bin/bash
+# -
+# File: pull_in_my_plugins.sh
+# Project: unmanic-plugins
+# File Created: Sunday, 22nd August 2021 11:38:59 pm
+# Author: Josh.5 (jsunnex@gmail.com)
+# -----
+# Last Modified: Sunday, 22nd August 2021 11:40:06 pm
+# Modified By: Josh.5 (jsunnex@gmail.com)
+# -
 
 repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
@@ -7,6 +16,7 @@ plugin_ids=(
     "encoder_video_h264_nvenc"
     "encoder_video_hevc_libx265"
     "encoder_video_hevc_nvenc"
+    "ignore_under_size"
     "mover2"
     "path_ignore"
     "postprocessor_script"
