@@ -9,6 +9,7 @@ plugin_ids=(
     "encoder_video_hevc_nvenc"
     "mover2"
     "postprocessor_script"
+    "video_trim"
 )
 
 pushd "${repo_root_path}" &> /dev/null
