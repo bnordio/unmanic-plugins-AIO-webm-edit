@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Monday, 23rd August 2021 8:34:30 pm
+# Last Modified: Monday, 23rd August 2021 9:26:34 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -13,6 +13,7 @@ repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
 plugin_ids=(
     "dts_to_dd"
+    "encoder_audio_aac"
     "encoder_video_h264_libx264"
     "encoder_video_h264_nvenc"
     "encoder_video_hevc_libx265"
