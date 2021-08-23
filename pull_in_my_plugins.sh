@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Monday, 23rd August 2021 2:22:49 pm
+# Last Modified: Monday, 23rd August 2021 2:35:08 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -19,6 +19,7 @@ plugin_ids=(
     "extract_srt_subtitles_to_files"
     "ignore_under_size"
     "mover2"
+    "notify_plex"
     "path_ignore"
     "postprocessor_script"
     "strip_image_streams"
