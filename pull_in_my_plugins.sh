@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Monday, 23rd August 2021 6:27:21 pm
+# Last Modified: Monday, 23rd August 2021 8:34:30 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -19,6 +19,7 @@ plugin_ids=(
     "encoder_video_hevc_nvenc"
     "extract_srt_subtitles_to_files"
     "ignore_under_size"
+    "limit_library_search_by_file_extension"
     "mover2"
     "normalise_aac"
     "notify_plex"
