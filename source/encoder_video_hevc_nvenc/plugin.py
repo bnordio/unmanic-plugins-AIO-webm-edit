@@ -55,6 +55,8 @@ class Settings(PluginSettings):
                                  "-aq-strength:v 8\n"
                                  "-a53cc 0\n"
                                  "-b:v:0 4M\n",
+        "keep_container":        True,
+        "dest_container":        "mkv",
     }
 
     def __init__(self):
