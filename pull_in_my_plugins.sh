@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Monday, 23rd August 2021 12:33:36 am
+# Last Modified: Monday, 23rd August 2021 2:22:49 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -21,6 +21,7 @@ plugin_ids=(
     "mover2"
     "path_ignore"
     "postprocessor_script"
+    "strip_image_streams"
     "video_trim"
 )
 
