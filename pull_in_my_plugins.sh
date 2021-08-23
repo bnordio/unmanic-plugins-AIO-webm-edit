@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Monday, 23rd August 2021 10:00:32 pm
+# Last Modified: Monday, 23rd August 2021 10:11:41 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -27,6 +27,7 @@ plugin_ids=(
     "notify_plex"
     "path_ignore"
     "postprocessor_script"
+    "remove_all_subtitles"
     "reorder_audio_streams_by_language"
     "reorder_subtitle_streams_by_language"
     "strip_image_streams"
