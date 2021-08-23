@@ -1,5 +1,0 @@
-[b][color=56adda]0.0.2[/color][/b]
-• Change to using Unmanic's info files for storing normalise config for a particular file
-
-[b][color=56adda]0.0.1[/color][/b]
-• initial version

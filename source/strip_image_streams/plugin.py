@@ -21,7 +21,6 @@
 """
 import logging
 import os
-from pprint import pprint
 
 from unmanic.libs.unplugins.settings import PluginSettings
 

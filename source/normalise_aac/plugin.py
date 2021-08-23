@@ -22,13 +22,13 @@
 
 """
 import logging
-import mimetypes
 import os
 from configparser import NoSectionError, NoOptionError
 
-from unmanic.libs import unffmpeg
 from unmanic.libs.unplugins.settings import PluginSettings
 from unmanic.libs.directoryinfo import UnmanicDirectoryInfo
+
+from lib.ffmpeg import StreamMapper, Probe, Parser
 
 # Configure plugin logger
 logger = logging.getLogger("Unmanic.Plugin.normalise_aac")
@@ -43,13 +43,31 @@ class Settings(PluginSettings):
     }
     form_settings = {
         "I":                           {
-            "label": "The integrated loudness target. Range is '-70.0' to '-5.0'. Default value is '-24.0'.",
+            "label":          "Integrated loudness target",
+            "input_type":     "slider",
+            "slider_options": {
+                "min":  -70.0,
+                "max":  -5.0,
+                "step": 0.1,
+            },
         },
         "LRA":                         {
-            "label": "Loudness range. Range is '1.0' to '20.0'. Default value is '7.0'. ",
+            "label":          "Loudness range",
+            "input_type":     "slider",
+            "slider_options": {
+                "min":  1.0,
+                "max":  20.0,
+                "step": 0.1,
+            },
         },
         "TP":                          {
-            "label": "The maximum true peak. Range is '-9.0' to '+0.0'. Default value is '-2.0'. ",
+            "label":          "The maximum true peak",
+            "input_type":     "slider",
+            "slider_options": {
+                "min":  -9.0,
+                "max":  0,
+                "step": 0.1,
+            },
         },
         "ignore_previously_processed": {
             "label": "Ignore all files previously normalised with this plugin regardless of the settings above.",
@@ -57,29 +75,24 @@ class Settings(PluginSettings):
     }
 
 
-def get_file_probe(file_path):
-    # Ensure file exists
-    if not os.path.exists(file_path):
-        return {}
+class PluginStreamMapper(StreamMapper):
+    def __init__(self):
+        super(PluginStreamMapper, self).__init__(logger, ['audio'])
 
-    # Only run this check against video/audio/image MIME types
-    mimetypes.init()
-    file_type = mimetypes.guess_type(file_path)[0]
-    # If the file has no MIME type then it cannot be tested
-    if file_type is None:
-        return {}
-    # Make sure the MIME type is either audio, video or image
-    file_type_category = file_type.split('/')[0]
-    if file_type_category not in ['audio', 'video', 'image']:
-        return {}
+    def test_stream_needs_processing(self, stream_info: dict):
+        # Only process AAC audio streams
+        if stream_info.get('codec_name').lower() in ['aac']:
+            return True
+        return False
 
-    try:
-        # Get the file probe info
-        return unffmpeg.Info().file_probe(file_path)
-    except unffmpeg.exceptions.ffprobe.FFProbeError as e:
-        return {}
-    except Exception as e:
-        return {}
+    def custom_stream_mapping(self, stream_info: dict, stream_id: int):
+        return {
+            'stream_mapping':  ['-map', '0:a:{}'.format(stream_id)],
+            'stream_encoding': [
+                '-c:a:{}'.format(stream_id), 'aac',
+                '-filter:a:{}'.format(stream_id), audio_filtergraph(),
+            ]
+        }
 
 
 def audio_filtergraph():
@@ -127,71 +140,6 @@ def file_already_normalised(path):
     return False
 
 
-def get_stream_mapping(file_probe_streams, testing=False):
-    if not file_probe_streams:
-        return False
-
-    # Map the streams into four arrays that will be placed to gether in the correct order.
-    stream_mapping = []
-    stream_codec = []
-
-    video_stream_count = 0
-    audio_stream_count = 0
-    subtitle_stream_count = 0
-
-    found_aac_streams_to_normalise = False
-    for probe_stream in file_probe_streams:
-        # Map the video stream
-        if probe_stream.get('codec_type').lower() == "video":
-            # Map this stream for copy to the destination file
-            stream_mapping += ['-map', '0:v:{}'.format(video_stream_count)]
-            # Add a codec flag copying this stream
-            stream_codec += ['-c:v:{}'.format(video_stream_count), 'copy']
-            video_stream_count += 1
-            continue
-
-        # Map the subtitle streams
-        if probe_stream.get('codec_type').lower() == "subtitle":
-            # Map this stream for copy to the destination file
-            stream_mapping += ['-map', '0:s:{}'.format(subtitle_stream_count)]
-            # Add a codec flag copying this stream
-            stream_codec += ['-c:s:{}'.format(subtitle_stream_count), 'copy']
-            subtitle_stream_count += 1
-            continue
-
-        # Map the audio streams
-        if probe_stream.get('codec_type').lower() == "audio":
-            # Check if we should just copy this audio stream or convert it...
-                    copy_stream = False
-
-            if copy_stream:
-                # This stream is not AAC or is already normalised, so only map it for copy to the destination file
-                stream_mapping += ['-map', '0:a:{}'.format(audio_stream_count)]
-                # Add a codec flag copying this stream
-                stream_codec += ['-c:a:{}'.format(audio_stream_count), 'copy']
-                audio_stream_count += 1
-                continue
-            else:
-                # Flag this file as having an aac audio stream that needs to be normalised
-                found_aac_streams_to_normalise = True
-                if testing:
-                    logger.info("File contains AAC stream that should be normalised.")
-                    # This is only a test to see if we should add it to the pending tasks list.
-                    # Don't bother to map the streams
-                    continue
-                # Map the audio stream to the destination file
-                stream_mapping += ['-map', '0:a:{}'.format(audio_stream_count)]
-                # Add a codec flag for encoding this stream with ac3 encoder
-                stream_codec += [
-                    '-c:a:{}'.format(audio_stream_count), 'aac',
-                    '-filter:a:{}'.format(audio_stream_count), audio_filtergraph(),
-                ]
-                audio_stream_count += 1
-                continue
-
-    return found_aac_streams_to_normalise, stream_mapping, stream_codec
-
-
 def on_library_management_file_test(data):
     """
     Runner function - enables additional actions during the library management file tests.
@@ -205,27 +153,23 @@ def on_library_management_file_test(data):
     :return:
 
     """
+    # Get the path to the file
+    abspath = data.get('path')
+
     # Get file probe
-    file_probe = get_file_probe(data.get('path'))
-    if not file_probe:
-        # File probe failed, skip the rest of this test
-        return data
+    probe = Probe(logger)
+    probe.file(abspath)
 
-    if file_already_normalised(data.get('path')):
-        found_streams = False
-    else:
-    found_streams, stream_mapping, stream_codec = get_stream_mapping(file_probe.get('streams'), testing=True)
+    # Get stream mapper
+    mapper = PluginStreamMapper()
+    mapper.set_probe(probe)
 
-    if found_streams:
+    if mapper.streams_need_processing():
         # Mark this file to be added to the pending tasks
         data['add_file_to_pending_tasks'] = True
-        logger.debug(
-            "File '{}' should be added to task list. One or more of the audio streams should be normalised.".format(
-                data.get('path'))
-        )
+        logger.debug("File '{}' should be added to task list. Probe found streams require processing.".format(abspath))
     else:
-        logger.debug("File '{}' does not contain audio streams needing to be normalised.".format(
-            data.get('path')))
+        logger.debug("File '{}' does not contain streams require processing.".format(abspath))
 
     return data
 
@@ -235,52 +179,64 @@ def on_worker_process(data):
     Runner function - enables additional configured processing jobs during the worker stages of a task.
 
     The 'data' object argument includes:
+        exec_command            - A command that Unmanic should execute. Can be empty.
+        command_progress_parser - A function that Unmanic can use to parse the STDOUT of the command to collect progress stats. Can be empty.
+        file_in                 - The source file to be processed by the command.
+        file_out                - The destination that the command should output (may be the same as the file_in if necessary).
+        original_file_path      - The absolute path to the original file.
+        repeat                  - Boolean, should this runner be executed again once completed with the same variables.
+
+    DEPRECIATED 'data' object args passed for legacy Unmanic versions:
         exec_ffmpeg             - Boolean, should Unmanic run FFMPEG with the data returned from this plugin.
-        file_probe              - A dictionary object containing the current file probe state.
         ffmpeg_args             - A list of Unmanic's default FFMPEG args.
-        file_in                 - The source file to be processed by the FFMPEG command.
-        file_out                - The destination that the FFMPEG command will output.
-        original_file_path      - The absolute path to the original library file.
 
     :param data:
     :return:
-    
+
     """
-    # Default to not run the FFMPEG command unless streams are found to be converted
+    # Default to no FFMPEG command required. This prevents the FFMPEG command from running if it is not required
+    data['exec_command'] = []
+    data['repeat'] = False
+    # DEPRECIATED: 'exec_ffmpeg' kept for legacy Unmanic versions
     data['exec_ffmpeg'] = False
 
+    # Get the path to the file
+    abspath = data.get('file_in')
+
     # Get file probe
-    file_probe = get_file_probe(data.get('file_in'))
-    if not file_probe:
+    probe = Probe(logger)
+    if not probe.file(abspath):
         # File probe failed, skip the rest of this test
         return data
 
-    if file_already_normalised(data.get('file_in')):
-        exec_ffmpeg = False
-    else:
-    # Get stream mapping
-        exec_ffmpeg, stream_mapping, stream_codec = get_stream_mapping(file_probe.get('streams'))
+    if not file_already_normalised(data.get('file_in')):
+        # Get stream mapper
+        mapper = PluginStreamMapper()
+        mapper.set_probe(probe)
 
-    if exec_ffmpeg:
-        # File has streams to normalise
-        data['exec_ffmpeg'] = True
-        # Build ffmpeg args and add them to the return data
-        data['ffmpeg_args'] = [
-            '-i',
-            data.get('file_in'),
-            '-hide_banner',
-            '-loglevel',
-            'info',
-        ]
-        data['ffmpeg_args'] += stream_mapping
-        data['ffmpeg_args'] += stream_codec
+        if mapper.streams_need_processing():
+            # Set the input file
+            mapper.set_input_file(abspath)
 
-        # Do not remux the file. Keep the file out in the same container
-        split_file_in = os.path.splitext(data.get('file_in'))
-        split_file_out = os.path.splitext(data.get('file_out'))
-        data['file_out'] = "{}{}".format(split_file_out[0], split_file_in[1])
+            # Set the output file
+            # Do not remux the file. Keep the file out in the same container
+            split_file_in = os.path.splitext(abspath)
+            split_file_out = os.path.splitext(data.get('file_out'))
+            mapper.set_output_file("{}{}".format(split_file_out[0], split_file_in[1]))
 
-        data['ffmpeg_args'] += ['-y', data.get('file_out')]
+            # Get generated ffmpeg args
+            ffmpeg_args = mapper.get_ffmpeg_args()
+
+            # Apply ffmpeg args to command
+            data['exec_command'] = ['ffmpeg']
+            data['exec_command'] += ffmpeg_args
+            # DEPRECIATED: 'ffmpeg_args' kept for legacy Unmanic versions
+            data['ffmpeg_args'] = ffmpeg_args
+
+            # Set the parser
+            parser = Parser(logger)
+            parser.set_probe(probe)
+            data['command_progress_parser'] = parser.parse_progress
 
     return data
 
@@ -300,7 +256,9 @@ def on_postprocessor_task_results(data):
 
     """
     # We only care that the task completed successfully.
-    # If a file move was unsuccessful, then it would not have been added to the destination_files list
+    # If a worker processing task was unsuccessful, dont mark the file as being normalised
+    # TODO: Figure out a way to know if a file was normalised but another plugin was the
+    #   cause of the task processing failure flag
     if not data.get('task_processing_success'):
         return data
 
