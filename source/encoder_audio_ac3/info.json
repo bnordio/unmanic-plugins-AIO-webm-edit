@@ -3,10 +3,10 @@
     "compatibility": [
         1
     ],
-    "description": "Ensure all audio streams are encoded with the AAC codec using the native FFmpeg aac encoder.",
+    "description": "Ensure all audio streams are encoded with the AC3 codec using the native FFmpeg ac3 encoder.",
     "icon": "",
-    "id": "encoder_audio_aac",
-    "name": "Audio Encoder AAC",
+    "id": "encoder_audio_ac3",
+    "name": "Audio Encoder AC3",
     "priorities": {
         "on_library_management_file_test": 99,
         "on_worker_process": 0

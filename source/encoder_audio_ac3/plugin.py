@@ -29,7 +29,7 @@ from unmanic.libs.unplugins.settings import PluginSettings
 from lib.ffmpeg import StreamMapper, Probe, Parser
 
 # Configure plugin logger
-logger = logging.getLogger("Unmanic.Plugin.encoder_audio_aac")
+logger = logging.getLogger("Unmanic.Plugin.encoder_audio_ac3")
 
 
 class Settings(PluginSettings):
@@ -82,18 +82,32 @@ class PluginStreamMapper(StreamMapper):
     def __init__(self):
         super(PluginStreamMapper, self).__init__(logger, ['audio'])
 
-    codec = 'aac'
-    encoder = 'aac'
+    codec = 'ac3'
+    encoder = 'ac3'
 
     @staticmethod
     def calculate_bitrate(stream_info: dict):
         channels = stream_info.get('channels')
-        # If no channel count is provided, assume the highest bitrate for 6 channels
+        # If no channel count is provided, assume the highest for AC3
         if not channels:
             logger.debug("Stream did not contain 'channels'. Setting max AC3 bit rate (640k).")
-            return 384
+            return '640'
 
-        return (int(stream_info.get('channels')) * 64)
+        # Determine bitrate based on source channel count
+        if int(channels) <= 2:
+            logger.debug("Stream 'channels' is <= 2. Setting AC3 bit rate to 448k.")
+            return '224'
+        elif int(channels) <= 4:
+            logger.debug("Stream 'channels' is <= 4. Setting AC3 bit rate to 448k.")
+            return '448'
+        elif int(channels) <= 6:
+            logger.debug("Stream 'channels' is <= 6. Setting max AC3 bit rate (640k).")
+            return '640'
+
+        # Default to best quality
+        logger.debug("Stream 'bit_rate' could not be matched directly ({}). Setting max AC3 bit rate.".format(
+            channels))
+        return '640'
 
     def test_stream_needs_processing(self, stream_info: dict):
         # Ignore streams already of the required codec_name

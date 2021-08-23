@@ -1,14 +1,9 @@
 
-For information on the AAC encoder settings:
-[FFmpeg - AAC Encoder](https://trac.ffmpeg.org/wiki/Encode/AAC)
-
---- 
-
 This Plugin will automatically manage bitrate for you. 
 
-As a rule of thumb, for audible transparency, use 64 kBit/s for each channel (so 128 kBit/s for stereo, 384 kBit/s for 5.1 surround sound). 
-
-This Plugin will detect the number of channels in each stream and apply a bitrate in accordance with this rule.
+- If the stream has 2 or less channels, the bitrate will be set to 224k
+- If the stream has 4 or less channels, the bitrate will be set to 448k
+- If the stream has more than 4 channels, the bitrate will be set to 640k (max value for encoder)
 
 ---
 
