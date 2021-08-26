@@ -12,16 +12,9 @@ Check your GPU compatibility:
 #### <span style="color:blue">Enable NVDEC HW Accelerated Decoding?</span>
 Decode the video stream using hardware accelerated decoding. This enables full hardware transcode with NVDEC and NVENC, using only GPU memory for the entire video transcode.
 
-This value sets '-hwaccel cuda -hwaccel_output_format cuda' in the ffmpeg main options.
+This value sets '-hwaccel cuda -hwaccel_device {device}' in the ffmpeg main options. 
 
 It is recommended that for 10-bit encodes, disable this option.
-
-#### <span style="color:blue">Max input stream packet buffer</span>
-When transcoding audio and/or video streams, ffmpeg will not begin writing into the output until it has one packet for each such stream. 
-While waiting for that to happen, packets for other streams are buffered. 
-This option sets the size of this buffer, in packets, for the matching output stream.
-
-FFmpeg docs refer to this value as '-max_muxing_queue_size' 
 
 
 #### <span style="color:blue">NVENC Encoder Quality Preset</span>
@@ -38,14 +31,12 @@ The Main profile is capable of 8-bit, Main 10-bit is capable of 10-bit, and Rang
 Any of these profiles are capable of 4:2:0, 4:2:2 and 4:4:4, however the support depends on the installed hardware.
 
 
-#### <span style="color:blue">Pixel Format</span>
-Set pixel format.
-It is recommended to keep this as auto. FFmpeg will attempt to match with the source file.
+#### <span style="color:blue">Max input stream packet buffer</span>
+When transcoding audio and/or video streams, ffmpeg will not begin writing into the output until it has one packet for each such stream. 
+While waiting for that to happen, packets for other streams are buffered. 
+This option sets the size of this buffer, in packets, for the matching output stream.
 
-For more information, see [this table](https://en.wikipedia.org/wiki/FFmpeg#Pixel_formats).
-
-[//]: <> (Ref:)
-[//]: <> (https://ffmpeg.org/doxygen/trunk/pixfmt_8h_source.html)
+FFmpeg docs refer to this value as '-max_muxing_queue_size'
 
 
 #### <span style="color:blue">Overwrite all options with custom input</span>
@@ -66,9 +57,6 @@ These params are added in three different places:
 ffmpeg \
     -hide_banner \
     -loglevel info \
-    -strict -2 \
-    -hwaccel cuvid \
-    -hwaccel_output_format cuda \
     <CUSTOM MAIN OPTIONS HERE> \
     -i /library/TEST_FILE.mkv \
     <CUSTOM ADVANCED OPTIONS HERE> \
