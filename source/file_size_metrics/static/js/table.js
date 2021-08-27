@@ -1,15 +1,5 @@
 var viewConversionDetails = function (jobId) {
-    $('#selected_task_id').val(jobId).triggerHandler('change');;
-    // Get conversion details template for this item
-    //$.get('conversionDetails/?task_id=' + jobId, function (data) {
-    //    // update/set the conversion details list
-    //    // $('#task_details_content').html(data);
-    //    // $('#task_details').removeClass('hidden');
-    //    console.log(data)
-    //    // // Highlight the currently selected task
-    //    // $('.completed_task').css('background', ''); // Remove highlight on all rows
-    //    // $('.completed_task_jobid_' + jobId).css('background', 'rgba(197, 185, 107, 0.20)');
-    //});
+    $('#selected_task_id').val(jobId).triggerHandler('change');
 };
 
 var CompletedTasksDatatable = function () {
@@ -34,7 +24,6 @@ var CompletedTasksDatatable = function () {
     };
 
     var buildTable = function () {
-        console.log("HERE2")
         $('#history_completed_tasks_table').DataTable({
             processing: true,
             serverSide: true,
@@ -50,10 +39,10 @@ var CompletedTasksDatatable = function () {
             columnDefs: [
                 {
                     targets: 0,
-                    title: "Task Name",
-                    className: "task_label",
-                    name: "task_label",
-                    data: "task_label",
+                    title: "New File Name",
+                    className: "basename",
+                    name: "basename",
+                    data: "basename",
                 },
                 {
                     targets: 1,
