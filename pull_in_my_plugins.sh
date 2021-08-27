@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Tuesday, 24th August 2021 12:39:04 am
+# Last Modified: Friday, 27th August 2021 5:01:07 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -22,6 +22,7 @@ plugin_ids=(
     "encoder_video_hevc_vaapi"
     "encoder_video_libvpx_vp9"
     "extract_srt_subtitles_to_files"
+    "file_size_metrics"
     "ignore_under_size"
     "limit_library_search_by_file_extension"
     "mover2"
