@@ -71,6 +71,12 @@ commit_message="[${plugin_id}] v${plugin_version}"
 echo ${commit_message}
 git add .
 git commit -m "${commit_message}"
+if [[ $? -gt 0 ]]; then
+    echo
+    echo "No commit created. Possibly because there was nothing to commit!"
+    echo "PR branch will not be pushed." 
+    exit 1
+fi
 popd &> /dev/null
 
 
