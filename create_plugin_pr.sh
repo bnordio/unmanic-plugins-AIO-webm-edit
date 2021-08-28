@@ -23,6 +23,15 @@ git clone --depth=1 --branch master --single-branch "git@github.com:Josh5/unmani
 [[ $? -gt 0 ]] && echo "Failed to fetch the plugin git repository. Exit!" && exit 1;
 
 
+########################################################################
+### UPDATE SUBMODULES
+pushd "${tmp_dir}/${plugin_id}" &> /dev/null
+# Update any submodules
+echo -e "\n*** Pulling plugin submodules"
+git submodule update --init --recursive 
+popd &> /dev/null
+
+
 # Clone the origin unmanic-plugins repository
 origin_url=$(git config --get remote.origin.url)
 git clone --depth=1 --branch official --single-branch "${origin_url}" "${tmp_dir}/unmanic-plugins"
@@ -41,9 +50,6 @@ popd &> /dev/null
 ########################################################################
 ### BUILD/INSTALL
 pushd "${tmp_dir}/unmanic-plugins" &> /dev/null
-# Pull files from plugin to this source directory
-echo -e "\n*** Pulling plugin submodules"
-git submodule update --init --recursive 
 # Install/update plugin files
 echo -e "\n*** Installing files from plugin git repo to this repository's source directory"
 rsync -avh --delete \
