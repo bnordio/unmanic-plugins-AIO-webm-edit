@@ -254,7 +254,9 @@ def on_library_management_file_test(data):
 
     # Get file probe
     probe = Probe(logger)
-    probe.file(abspath)
+    if not probe.file(abspath):
+        # File probe failed, skip the rest of this test
+        return data
 
     # Get stream mapper
     mapper = PluginStreamMapper()
@@ -297,7 +299,9 @@ def on_worker_process(data):
 
     # Get file probe
     probe = Probe(logger)
-    probe.file(abspath)
+    if not probe.file(abspath):
+        # File probe failed, skip the rest of this test
+        return data
 
     # Get stream mapper
     mapper = PluginStreamMapper()
@@ -340,9 +344,6 @@ def on_worker_process(data):
 
         # Get generated ffmpeg args
         ffmpeg_args = mapper.get_ffmpeg_args()
-
-        from pprint import pprint
-        pprint(ffmpeg_args)
 
         # Apply ffmpeg args to command
         data['exec_command'] = ['ffmpeg']

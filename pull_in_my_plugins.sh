@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Friday, 27th August 2021 5:01:07 pm
+# Last Modified: Sunday, 29th August 2021 12:44:31 am
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -15,26 +15,10 @@ plugin_ids=(
     "dts_to_dd"
     "encoder_audio_aac"
     "encoder_audio_ac3"
-    "encoder_video_h264_libx264"
-    "encoder_video_h264_nvenc"
-    "encoder_video_hevc_libx265"
-    "encoder_video_hevc_nvenc"
     "encoder_video_hevc_vaapi"
     "encoder_video_libvpx_vp9"
-    "extract_srt_subtitles_to_files"
-    "file_size_metrics"
-    "ignore_under_size"
-    "limit_library_search_by_file_extension"
-    "mover2"
     "normalise_aac"
-    "notify_plex"
-    "path_ignore"
-    "postprocessor_script"
     "remove_all_subtitles"
-    "reorder_audio_streams_by_language"
-    "reorder_subtitle_streams_by_language"
-    "strip_image_streams"
-    "video_trim"
 )
 
 pushd "${repo_root_path}" &> /dev/null
