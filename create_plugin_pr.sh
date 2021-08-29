@@ -3,6 +3,7 @@
 # Generate a plugin PR for the official repo
 #
 
+official_git_repo="git@github.com:Unmanic/unmanic-plugins.git"
 repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
 plugin_id="${@}"
@@ -23,19 +24,22 @@ git clone --depth=1 --branch master --single-branch "git@github.com:Josh5/unmani
 [[ $? -gt 0 ]] && echo "Failed to fetch the plugin git repository. Exit!" && exit 1;
 
 
-########################################################################
-### UPDATE SUBMODULES
-pushd "${tmp_dir}/${plugin_id}" &> /dev/null
-# Update any submodules
-echo -e "\n*** Pulling plugin submodules"
-git submodule update --init --recursive 
-popd &> /dev/null
-
-
 # Clone the origin unmanic-plugins repository
 origin_url=$(git config --get remote.origin.url)
 git clone --depth=1 --branch official --single-branch "${origin_url}" "${tmp_dir}/unmanic-plugins"
 [[ $? -gt 0 ]] && echo "Failed to fetch the unmanic-plugins git repository. Exit!" && exit 1;
+
+
+########################################################################
+### PULL OFFICIAL UPSTREAM
+pushd "${tmp_dir}/unmanic-plugins" &> /dev/null
+# Add upstream remote
+echo -e "\n*** Adding upstream git repo"
+git remote add upstream "${official_git_repo}"
+# Pull changes from upstream
+git pull upstream official
+[[ $? -gt 0 ]] && echo "Failed to pull in changes from the official git repository. Exit!" && exit 1;
+popd &> /dev/null
 
 
 ########################################################################
@@ -44,6 +48,15 @@ pushd "${tmp_dir}/unmanic-plugins" &> /dev/null
 # Create PR branch 
 echo -e "\n*** Checkout PR branch for plugin"
 git checkout -b "pr-${plugin_id}"
+popd &> /dev/null
+
+
+########################################################################
+### UPDATE SUBMODULES
+pushd "${tmp_dir}/${plugin_id}" &> /dev/null
+# Update any submodules
+echo -e "\n*** Pulling plugin submodules"
+git submodule update --init --recursive 
 popd &> /dev/null
 
 
