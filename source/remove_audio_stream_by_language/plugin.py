@@ -63,22 +63,16 @@ class PluginStreamMapper(StreamMapper):
         return False
 
     def test_stream_needs_processing(self, stream_info: dict):
-        # Always return true here.
-        # All streams will use the custom stream mapping method below
-        return True
+        """Only add streams that have language task that match our list"""
+        if self.test_tags_for_search_string(stream_info.get('tags'), stream_info.get('index')):
+            return True
+        return False
 
     def custom_stream_mapping(self, stream_info: dict, stream_id: int):
-        """Do not map the streams matched above"""
-        if self.test_tags_for_search_string(stream_info.get('tags'), stream_id):
-            # Remove this stream
-            return {
-                'stream_mapping':  [],
-                'stream_encoding': [],
-            }
-        # Copy streams
+        """Remove this stream"""
         return {
-            'stream_mapping':  ['-map', '0:{}:{}'.format('a', stream_id)],
-            'stream_encoding': ['-c:{}:{}'.format('a', stream_id), 'copy'],
+            'stream_mapping':  [],
+            'stream_encoding': [],
         }
 
 
@@ -168,7 +162,6 @@ def on_worker_process(data):
     mapper.set_input_file(abspath)
 
     if mapper.streams_need_processing():
-
         # Set the output file
         mapper.set_output_file(data.get('file_out'))
 
