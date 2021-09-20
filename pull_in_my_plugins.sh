@@ -5,20 +5,15 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Sunday, 29th August 2021 12:44:31 am
+# Last Modified: Monday, 20th September 2021 11:57:11 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
 repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
 plugin_ids=(
+    "remove_audio_stream_by_language"
     "dts_to_dd"
-    "encoder_audio_aac"
-    "encoder_audio_ac3"
-    "encoder_video_hevc_vaapi"
-    "encoder_video_libvpx_vp9"
-    "normalise_aac"
-    "remove_all_subtitles"
 )
 
 pushd "${repo_root_path}" &> /dev/null
