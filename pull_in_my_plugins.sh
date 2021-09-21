@@ -5,13 +5,14 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Monday, 20th September 2021 11:57:11 pm
+# Last Modified: Tuesday, 21st September 2021 7:25:30 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
 repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
 plugin_ids=(
+    "comskip"
     "remove_audio_stream_by_language"
     "dts_to_dd"
 )
