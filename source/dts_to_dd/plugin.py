@@ -38,7 +38,7 @@ class Settings(PluginSettings):
     }
     form_settings = {
         "downmix_dts_hd_ma": {
-            "label": "Downmix DTS-HD Master Audio (max 5.1 channels)?",
+            "label": "Downmix DTS-HD Master Audio (max 6 channels)?",
         },
     }
 
@@ -88,8 +88,6 @@ class PluginStreamMapper(StreamMapper):
         return '640k'
 
     def test_stream_needs_processing(self, stream_info: dict):
-        # Check if we should clone this audio stream or convert it...
-        clone_stream = True
         if stream_info.get('codec_name').lower() == "dts":
             if self.should_process_dts_stream(stream_info):
                 return True
