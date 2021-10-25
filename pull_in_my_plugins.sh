@@ -5,7 +5,7 @@
 # File Created: Sunday, 22nd August 2021 11:38:59 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Tuesday, 28th September 2021 11:59:44 pm
+# Last Modified: Monday, 25th October 2021 7:31:03 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 # -
 
@@ -14,6 +14,7 @@ repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 plugin_ids=(
     "create_stereo_audio_clone"
     "dts_to_dd"
+    "video_remuxer_aio_webm"
 )
 
 pushd "${repo_root_path}" &> /dev/null
