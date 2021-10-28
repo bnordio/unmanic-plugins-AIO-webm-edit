@@ -14,6 +14,7 @@ repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 plugin_ids=(
     "create_stereo_audio_clone"
     "dts_to_dd"
+    "sickbeard_mp4_automator"
     "video_remuxer_aio_webm"
 )
 
@@ -32,7 +33,13 @@ for plugin_id in "${plugin_ids[@]}"; do
 
     # Pull files from plugin to this source directory
     echo -e "\n*** Pulling plugin submodules"
-    git submodule update --init --recursive 
+    git submodule update --init --recursive
+
+    # Apply all patches
+    if [[ -d ./patches ]]; then
+        echo -e "\n*** Patching project"
+        find ./patches -type f -name "*.patch" -exec patch -p1 --input="{}" --forward --verbose \;
+    fi
 
     # Install/update plugin files
     echo -e "\n*** Installing files from plugin git repo to this repository's source directory"
