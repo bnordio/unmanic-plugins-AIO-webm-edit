@@ -61,6 +61,17 @@ popd &> /dev/null
 
 
 ########################################################################
+### PATCH PROJECT
+pushd "${tmp_dir}/${plugin_id}" &> /dev/null
+# Apply any patches
+if [[ -d ./patches ]]; then
+    echo -e "\n*** Patching project"
+    find ./patches -type f -name "*.patch" -exec patch -p1 --input="{}" --forward --verbose \;
+fi
+popd &> /dev/null
+
+
+########################################################################
 ### BUILD/INSTALL
 pushd "${tmp_dir}/unmanic-plugins" &> /dev/null
 # Install/update plugin files
