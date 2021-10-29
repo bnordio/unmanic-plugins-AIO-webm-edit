@@ -2,6 +2,12 @@
 
 import sys
 import os
+
+# Add plugin site-packages directory to the PYTHONPATH
+plugin_site_packages_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'site-packages'))
+if os.path.exists(plugin_site_packages_dir) and plugin_site_packages_dir not in sys.path:
+    sys.path.append(plugin_site_packages_dir)
+
 import guessit
 import locale
 import glob
