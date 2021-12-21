@@ -1,0 +1,37 @@
+{
+    "scripts": {
+        "build": "vendor-copy"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "5.15.3",
+        "bootstrap": "4.6.0",
+        "chart.js": "2.9.4",
+        "datatables.net-bs4": "1.10.24",
+        "jquery": "3.6.0",
+        "jquery.easing": "^1.4.1",
+        "startbootstrap-sb-admin-2": "^4.1.4",
+        "vendor-copy": "^3.0.1"
+    },
+    "vendorCopy": [
+        {
+            "from": "node_modules/@fortawesome/fontawesome-free",
+            "to": "static/vendor/fontawesome-free"
+        },
+        {
+            "from": "node_modules/jquery",
+            "to": "static/vendor/jquery"
+        },
+        {
+            "from": "node_modules/bootstrap",
+            "to": "static/vendor/bootstrap"
+        },
+        {
+            "from": "node_modules/jquery.easing",
+            "to": "static/vendor/jquery-easing"
+        },
+        {
+            "from": "node_modules/chart.js",
+            "to": "static/vendor/chart.js"
+        }
+    ]
+}

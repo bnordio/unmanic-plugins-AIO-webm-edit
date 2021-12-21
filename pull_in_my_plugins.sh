@@ -16,6 +16,7 @@ plugin_ids=(
     "dts_to_dd"
     "encoder_video_hevc_qsv"
     "ffmpeg_file_error_checker"
+    "video_library_stats"
     "video_remuxer_aio_webm"
 )
 
