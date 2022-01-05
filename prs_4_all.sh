@@ -21,6 +21,7 @@ plugin_ids=(
     "encoder_video_h264_nvenc"
     "encoder_video_hevc_libx265"
     "encoder_video_hevc_nvenc"
+    "encoder_video_hevc_qsv"
     "encoder_video_hevc_vaapi"
     "extract_srt_subtitles_to_files"
     "file_size_metrics"
