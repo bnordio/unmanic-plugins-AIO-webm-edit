@@ -46,7 +46,8 @@ class Settings(PluginSettings):
         "always_run":            True,
     }
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(Settings, self).__init__(*args, **kwargs)
         self.form_settings = {
             "decoding_type":         {
                 "label":          "Enable HW Accelerated Decoding?",
@@ -154,14 +155,14 @@ class PluginStreamMapper(StreamMapper):
         }
         self.set_ffmpeg_generic_options(**generic_kwargs)
 
-    def generate_test_args(self):
+    def generate_test_args(self, settings):
         """
 
         ffmpeg -hide_banner -loglevel error -stats -xerror -hwaccel vaapi -hwaccel_output_format vaapi -hwaccel_device /dev/dri/renderD128 -i "${1}" -max_muxing_queue_size 9999 -f null -
+
+        :param settings:
         :return:
         """
-        settings = Settings()
-
         # Configure loglevel
         generic_args = [
             "-stats",
@@ -184,14 +185,14 @@ class PluginStreamMapper(StreamMapper):
         self.set_ffmpeg_advanced_options(**advanced_kwargs)
 
 
-def needs_testing(path):
+def needs_testing(path, settings):
     """
     Ensure this file does not need to be added due to frequent retesting
 
     :param path:
+    :param settings:
     :return:
     """
-    settings = Settings()
     directory_info = UnmanicDirectoryInfo(os.path.dirname(path))
 
     try:
@@ -246,7 +247,13 @@ def on_library_management_file_test(data):
     mapper = PluginStreamMapper()
     mapper.set_probe(probe)
 
-    if needs_testing(abspath):
+    # Configure settings object
+    if data.get('library_id'):
+        settings = Settings(library_id=data.get('library_id'))
+    else:
+        settings = Settings()
+
+    if needs_testing(abspath, settings):
         # Mark this file to be added to the pending tasks
         data['add_file_to_pending_tasks'] = True
         logger.debug(
@@ -287,11 +294,16 @@ def on_worker_process(data):
         # File probe failed, skip the rest of this test
         return data
 
+    # Configure settings object (maintain compatibility with v1 plugins)
+    if data.get('library_id'):
+        settings = Settings(library_id=data.get('library_id'))
+    else:
+        settings = Settings()
+
     # Check if this plugin should run every time against files or only when scheduled
-    settings = Settings()
     if settings.get_setting('retest_files') and not settings.get_setting('always_run'):
         logger.debug("Plugin configured to only run against video files that are required.")
-        if not needs_testing(abspath):
+        if not needs_testing(abspath, settings):
             # This video file has been tested within the configured frequency time
             return data
 
@@ -306,7 +318,7 @@ def on_worker_process(data):
     mapper.set_output_null()
 
     # Set the test args
-    mapper.generate_test_args()
+    mapper.generate_test_args(settings)
 
     # Get generated ffmpeg args
     ffmpeg_args = mapper.get_ffmpeg_args()
@@ -343,8 +355,12 @@ def on_postprocessor_task_results(data):
     if not data.get('task_processing_success'):
         return data
 
+    # Configure settings object
+    if data.get('library_id'):
+        settings = Settings(library_id=data.get('library_id'))
+    else:
+        settings = Settings()
     # Loop over the destination_files list and update the directory info file for each one
-    settings = Settings()
     if settings.get_setting('retest_files'):
         current_timestamp = time.time()
         for destination_file in data.get('destination_files'):
