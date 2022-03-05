@@ -46,17 +46,19 @@ class Settings(PluginSettings):
 class PluginStreamMapper(StreamMapper):
     def __init__(self):
         super(PluginStreamMapper, self).__init__(logger, ['audio'])
+        self.settings = None
 
-    @staticmethod
-    def should_process_dts_stream(probe_stream):
-        settings = Settings()
+    def set_settings(self, settings):
+        self.settings = settings
+
+    def should_process_dts_stream(self, probe_stream):
         if probe_stream.get('profile').lower() == 'dts':
             # Process all DTS tracks
             return True
 
         if probe_stream.get('profile').lower() == 'dts-hd ma':
             # This stream is DTS-HD Master Audio. Check if configured to downmix Master Audio
-            if settings.get_setting('downmix_dts_hd_ma'):
+            if self.settings.get_setting('downmix_dts_hd_ma'):
                 return True
 
         # Default to
@@ -128,8 +130,15 @@ def on_library_management_file_test(data):
         # File probe failed, skip the rest of this test
         return data
 
+    # Configure settings object (maintain compatibility with v1 plugins)
+    if data.get('library_id'):
+        settings = Settings(library_id=data.get('library_id'))
+    else:
+        settings = Settings()
+
     # Get stream mapper
     mapper = PluginStreamMapper()
+    mapper.set_settings(settings)
     mapper.set_probe(probe)
 
     if mapper.streams_need_processing():
@@ -177,8 +186,15 @@ def on_worker_process(data):
         # File probe failed, skip the rest of this test
         return data
 
+    # Configure settings object (maintain compatibility with v1 plugins)
+    if data.get('library_id'):
+        settings = Settings(library_id=data.get('library_id'))
+    else:
+        settings = Settings()
+
     # Get stream mapper
     mapper = PluginStreamMapper()
+    mapper.set_settings(settings)
     mapper.set_probe(probe)
 
     if mapper.streams_need_processing():

@@ -56,7 +56,8 @@ class Settings(PluginSettings):
         "subtitle_codec":              "webvtt",
     }
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(Settings, self).__init__(*args, **kwargs)
         self.form_settings = {
             "video_codec":                 self.__set_video_codec_settings(),
             "auto_video_encoder_settings": self.__set_auto_video_encoder_settings_settings(),
@@ -240,11 +241,12 @@ class PluginStreamMapper(StreamMapper):
         self.settings = None
         self.container_data = None
         self.filter_complex = []
+        self.settings = None
+
+    def set_settings(self, settings):
+        self.settings = settings
 
     def test_stream_needs_processing(self, stream_info: dict):
-        if not self.settings:
-            self.settings = Settings()
-
         # Test all stream types
         if stream_info.get('codec_type').lower() == "video":
             if stream_info.get('codec_name').lower() not in [self.settings.get_setting('video_codec')]:
@@ -267,9 +269,6 @@ class PluginStreamMapper(StreamMapper):
             'attachment': 't'
         }
         codec_type = stream_info.get('codec_type').lower()
-
-        if not self.settings:
-            self.settings = Settings()
 
         if stream_info.get('codec_type').lower() == "video":
             if self.settings.get_setting('video_codec') == 'vp9':
@@ -575,8 +574,15 @@ def on_library_management_file_test(data):
         # File probe failed, skip the rest of this test
         return data
 
+    # Configure settings object (maintain compatibility with v1 plugins)
+    if data.get('library_id'):
+        settings = Settings(library_id=data.get('library_id'))
+    else:
+        settings = Settings()
+
     # Get stream mapper
     mapper = PluginStreamMapper()
+    mapper.set_settings(settings)
     mapper.set_probe(probe)
 
     # Set the input file
@@ -626,8 +632,15 @@ def on_worker_process(data):
         # File probe failed, skip the rest of this test
         return data
 
+    # Configure settings object (maintain compatibility with v1 plugins)
+    if data.get('library_id'):
+        settings = Settings(library_id=data.get('library_id'))
+    else:
+        settings = Settings()
+
     # Get stream mapper
     mapper = PluginStreamMapper()
+    mapper.set_settings(settings)
     mapper.set_probe(probe)
 
     # Set the input file
