@@ -43,6 +43,7 @@ plugin_ids=(
     "reorder_audio_streams_by_language"
     "reorder_subtitle_streams_by_language"
     "sma"
+    "strip_image_streams"
     "video_remuxer"
 )
 
