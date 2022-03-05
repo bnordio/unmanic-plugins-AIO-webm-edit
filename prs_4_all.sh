@@ -32,6 +32,8 @@ plugin_ids=(
     "mover2"
     "normalise_aac"
     "notify_plex"
+    "notify_radarr"
+    "notify_sonarr"
     "path_ignore"
     "postprocessor_script"
     "reject_files_larger_than_original"
