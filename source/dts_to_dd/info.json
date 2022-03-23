@@ -8,6 +8,9 @@
     "icon": "https://raw.githubusercontent.com/Josh5/unmanic.plugin.dts_to_dd/master/icon.png",
     "id": "dts_to_dd",
     "name": "Convert DTS to Dolby Digital",
+    "platform": [
+        "all"
+    ],
     "priorities": {
         "on_worker_process": 0
     },

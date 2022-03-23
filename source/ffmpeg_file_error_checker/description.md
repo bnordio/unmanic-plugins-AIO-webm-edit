@@ -4,8 +4,9 @@
 #### <span style="color:blue">Enable HW Accelerated Decoding?</span>
 Decode the video stream using hardware accelerated decoding. 
 
-Note: This plugin will test all video files. If you configure HW Accelerated decoding, then ensure you video files
-are compatible.
+:::note
+This plugin will test all video files. If you configure HW Accelerated decoding, then ensure you video files are compatible.
+:::
 
 Check your GPU compatibility for decoding:
  - [NVIDIA GPU compatibility table](https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new).

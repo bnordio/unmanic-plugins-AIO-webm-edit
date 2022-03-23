@@ -4,10 +4,9 @@ This Plugin will automatically manage bitrate for you.
 - If the source stream bitrate is equal or less than 768kb/s, the bitrate will be set to 448k
 - If the source stream bitrate is greater than 768kb/s, the bitrate will be set to 640k (max value for encoder)
 
-<div style="background-color:#eee;border-radius:4px;border-left:solid 5px #ccc;padding:10px;">
-<b>Note:</b>
-<br>The FFmpeg AC3 encoder is not able to encode more than 6 channels.
-</div>
+:::note
+The FFmpeg AC3 encoder is not able to encode more than 6 channels.
+:::
 
 ---
 

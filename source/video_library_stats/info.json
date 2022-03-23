@@ -8,9 +8,12 @@
     "icon": "https://raw.githubusercontent.com/Josh5/unmanic.plugin.video_library_stats/master/icon.png",
     "id": "video_library_stats",
     "name": "Video Library Stats Data Panel",
+    "platform": [
+        "all"
+    ],
     "priorities": {
         "on_library_management_file_test": 0
     },
     "tags": "data panel",
-    "version": "0.0.2"
+    "version": "0.0.3"
 }

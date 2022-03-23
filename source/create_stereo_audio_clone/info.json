@@ -8,10 +8,13 @@
     "icon": "https://raw.githubusercontent.com/Josh5/unmanic.plugin.create_stereo_audio_clone/master/icon.png",
     "id": "create_stereo_audio_clone",
     "name": "Create stereo audio stream from surround sound",
+    "platform": [
+        "all"
+    ],
     "priorities": {
         "on_library_management_file_test": 99,
         "on_worker_process": 5
     },
     "tags": "audio,ffmpeg,library file test",
-    "version": "0.0.2"
+    "version": "0.0.3"
 }

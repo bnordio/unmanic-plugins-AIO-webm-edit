@@ -8,9 +8,12 @@
     "icon": "",
     "id": "video_remuxer_aio_webm",
     "name": "Remux Video Files to WebM",
+    "platform": [
+        "all"
+    ],
     "priorities": {
         "on_worker_process": 3
     },
     "tags": "audio,video,ffmpeg",
-    "version": "0.0.2"
+    "version": "0.0.3"
 }
