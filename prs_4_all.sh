@@ -45,6 +45,7 @@ plugin_ids=(
     "sma"
     "strip_image_streams"
     "video_remuxer"
+    "video_trim"
 )
 
 
