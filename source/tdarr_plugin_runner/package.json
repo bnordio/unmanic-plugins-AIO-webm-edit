@@ -1,0 +1,34 @@
+{
+    "scripts": {
+        "build": "vendor-copy"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "5.15.3",
+        "bootstrap": "4.6.0",
+        "import-fresh": "^3.3.0",
+        "jquery": "3.6.0",
+        "jquery.easing": "^1.4.1",
+        "mediainfo.js": "^0.1.7",
+        "startbootstrap-sb-admin-2": "^4.1.4",
+        "vendor-copy": "^3.0.1",
+        "yargs": "^17.4.0"
+    },
+    "vendorCopy": [
+        {
+            "from": "node_modules/@fortawesome/fontawesome-free",
+            "to": "static/vendor/fontawesome-free"
+        },
+        {
+            "from": "node_modules/jquery",
+            "to": "static/vendor/jquery"
+        },
+        {
+            "from": "node_modules/bootstrap",
+            "to": "static/vendor/bootstrap"
+        },
+        {
+            "from": "node_modules/jquery.easing",
+            "to": "static/vendor/jquery-easing"
+        }
+    ]
+}

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Tdarr Plugin Runner</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="./static/vendor/fontawesome-free/css/all.min.css?{cache_buster}" rel="stylesheet" type="text/css">
+    <link
+            href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+            rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="./static/css/sb-admin-2.css?{cache_buster}" rel="stylesheet">
+
+    <style type="text/css">
+        .folderPaths {
+            margin-left: auto;
+            margin-right: auto;
+            width: 80%;
+            padding: 12px 10px;
+            border: 1px solid #000;
+            border-radius: 2px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .resGrid {
+            display: grid;
+            grid-template-columns: auto auto auto auto auto;
+            overflow-x: auto;
+        }
+
+        .resBounds {
+            width: 70px;
+            display: inline-block;
+            border: 1px solid #000;
+            border-radius: 4px;
+            box-sizing: border-box;
+            size: 14px;
+        }
+    </style>
+
+</head>
+
+<body id="page-top">
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top">
+
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                <!-- Page Heading -->
+                <h1 class="h3 mb-2 text-gray-800">Tdarr Plugin Runner</h1>
+
+                <!-- Nav Tabs -->
+                <ul class="nav nav-tabs ml-3">
+                    <li class="nav-item">
+                        <a id="nav_library" class="nav-link active" href="#">Libraries - Transcode Options</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav_options" class="nav-link" href="./page_options">Options</a>
+                    </li>
+                </ul>
+
+                <!-- Library Selector -->
+                <form class="d-none d-sm-inline-block form-inline ml-auto my-4 my-md-0">
+                    <div class="input-group">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="librarySelectButton"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Select the library to configure
+                            </button>
+                            <div id="library_selections_container" class="dropdown-menu"
+                                 aria-labelledby="librarySelectButton">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </nav>
+            <!-- End of Topbar -->
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 text-right">
+                        <h1 id="selected_library_header"></h1>
+                    </div>
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Plugin Stack -->
+                    <div class="col-12">
+
+                        <div class="card shadow mb-4">
+                            <!-- Card Header -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Settings</h6>
+                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <form>
+                                    <input type="hidden" id="library_id" name="library_id" value="0"/>
+
+                                    <h5>Filters at scan level</h5>
+                                    <br>
+                                    <p style="margin-bottom:0;">Container types to scan for:</p>
+                                    <input type="text" class="folderPaths"
+                                           name="containerFilter"
+                                           value="mkv,mp4,mov,m4v,mpg,mpeg,avi,flv,webm,wmv,vob,evo,iso,m2ts,ts">
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <h5>Filters at transcode queue level</h5>
+                                    <br>
+                                    <p style="margin-bottom:0;">Resolutions to skip:</p>
+                                    <input type="text" class="folderPaths"
+                                           name="filterResolutionsSkip"
+                                           placeholder="e.g.: 720p,1080p" value="">
+                                    <br>
+                                    <p style="margin-bottom:0;">Codecs to skip:</p>
+                                    <input type="text" class="folderPaths"
+                                           name="filterCodecsSkip"
+                                           placeholder="e.g.: hevc,vp9" value="">
+                                    <br>
+                                    <br>
+                                    <br>
+
+                                    <h5>Resolution boundaries</h5>
+                                    <div class="resGrid">
+                                        <div></div>
+                                        <div><p>Width Min</p></div>
+                                        <div><p>Width Max</p></div>
+                                        <div><p>Height Min</p></div>
+                                        <div><p>Height Max</p></div>
+                                        <div><p>480p</p></div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res480p,widthMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res480p,widthMax" value="792">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res480p,heightMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res480p,heightMax" value="528">
+                                        </div>
+                                        <div><p>576p</p>
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res576p,widthMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res576p,widthMax" value="792">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res576p,heightMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res576p,heightMax" value="634">
+                                        </div>
+                                        <div><p>720p</p>
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res720p,widthMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res720p,widthMax" value="1408">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res720p,heightMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res720p,heightMax" value="792">
+                                        </div>
+                                        <div><p>1080p</p>
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res1080p,widthMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res1080p,widthMax" value="2112">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res1080p,heightMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res1080p,heightMax" value="1188">
+                                        </div>
+                                        <div><p>4KUHD</p>
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res4KUHD,widthMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res4KUHD,widthMax" value="4224">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res4KUHD,heightMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res4KUHD,heightMax" value="2376">
+                                        </div>
+                                        <div><p>DCI4K</p>
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="resDCI4K,widthMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="resDCI4K,widthMax" value="4506">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="resDCI4K,heightMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="resDCI4K,heightMax" value="2376">
+                                        </div>
+                                        <div><p>8KUHD</p>
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res8KUHD,widthMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res8KUHD,widthMax" value="8448">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res8KUHD,heightMin" value="100">
+                                        </div>
+                                        <div>
+                                            <input onClick="saveConfig" type="text" class="resBounds"
+                                                   name="res8KUHD,heightMax" value="5752">
+                                        </div>
+                                    </div>
+                                    <input type="submit" value="Submit">
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<!-- End of Page Wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<!-- Bootstrap core JavaScript-->
+<script src="./static/vendor/jquery/dist/jquery.min.js?{cache_buster}"></script>
+<script src="./static/vendor/bootstrap/dist/js/bootstrap.bundle.min.js?{cache_buster}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="./static/vendor/jquery-easing/jquery.easing.min.js?{cache_buster}"></script>
+
+<!-- Custom scripts for all pages-->
+<script src="./static/js/sb-admin-2.js?{cache_buster}"></script>
+
+<!-- Page level custom scripts -->
+<script src="./static/js/main.js?{cache_buster}"></script>
+
+<script>
+    let globalConfig;
+
+    const submitGlobalSettings = function () {
+        console.log("submit")
+        console.log(this)
+    }
+
+    const stringToElement = function (htmlString) {
+        let template = document.createElement('template');
+        template.innerHTML = htmlString;
+        return template.content;
+    }
+
+    const templateRender = function (templateId, data) {
+        const template = document.getElementById(templateId).innerHTML;
+        const pattern = /{\s*(\w+?)\s*}/g;
+        return template.replace(pattern, (_, token) => data[token] || '');
+    }
+
+    const updateResBoundsValues = function () {
+        document.querySelectorAll('.resBounds').forEach(function (input) {
+            // Now do something with my button
+            console.log(input.name)
+            console.log(globalConfig[input.name])
+            if (typeof globalConfig[input.name] !== 'undefined') {
+                // Update input
+                input.value = globalConfig[input.name];
+            }
+        });
+        console.log()
+    }
+    const fetchGlobalConfig = function () {
+        jQuery.get('get_global_config?library_id=' + selectedLibraryID, function (response) {
+            // Trigger update of plugin list
+            console.log(response.data)
+            globalConfig = response.data['global_config'];
+            updateResBoundsValues();
+        });
+    }
+    window.onload = function funLoad() {
+        let selectedLibraryId = document.getElementById("library_id");
+        selectedLibraryId.addEventListener('change', (event) => {
+            // Fetch the current global config
+            fetchGlobalConfig();
+        });
+
+        Main.init();
+    }
+</script>
+
+
+</body>
+
+</html>

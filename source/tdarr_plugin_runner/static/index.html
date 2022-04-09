@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Tdarr Plugin Runner</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="./static/vendor/fontawesome-free/css/all.min.css?{cache_buster}" rel="stylesheet" type="text/css">
+    <link
+            href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+            rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="./static/css/sb-admin-2.css?{cache_buster}" rel="stylesheet">
+
+    <style type="text/css">
+        .h-divider {
+            height: 1px;
+            width: 100%;
+            border-top: 1px solid gray;
+        }
+
+        .v-divider {
+            width: 1px;
+            border-left: 1px solid gray;
+        }
+    </style>
+
+</head>
+
+<body id="page-top">
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top">
+
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                <!-- Page Heading -->
+                <h1 class="h3 mb-2 text-gray-800">Tdarr Plugin Runner</h1>
+
+                <!-- Nav Tabs -->
+                <ul class="nav nav-tabs ml-3">
+                    <li class="nav-item">
+                        <a id="nav_library" class="nav-link active" href="#">Libraries - Transcode Options</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav_options" class="nav-link" href="./page_options">Options</a>
+                    </li>
+                </ul>
+
+                <!-- Library Selector -->
+                <form class="d-none d-sm-inline-block form-inline ml-auto my-4 my-md-0">
+                    <div class="input-group">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="librarySelectButton"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Select the library to configure
+                            </button>
+                            <div id="library_selections_container" class="dropdown-menu"
+                                 aria-labelledby="librarySelectButton">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </nav>
+            <!-- End of Topbar -->
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+                <input type="hidden" id="library_id" name="library_id" value="0"/>
+                <div class="row">
+                    <div class="col-12 text-right">
+                        <h1 id="selected_library_header"></h1>
+                    </div>
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Plugin Stack -->
+                    <div class="col">
+                        <div class="card shadow mb-4">
+                            <!-- Card Header - Dropdown -->
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Plugin Stack</h6>
+                                <small class="form-text text-muted">
+                                    Currently installed plugins.
+                                </small>
+                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <!--TODO: Add busy animation prior to loading list-->
+                                <ul class="list-group" id="installed_plugins"></ul>
+                                <template id="plugin_stack_template">
+                                    <li id="li_{listItemId}" class="list-group-item">
+                                        <div class="row justify-content-center text-center">
+                                            <div class="col align-self-start">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                           id="enabled_{listItemId}">
+                                                    <label class="custom-control-label"
+                                                           for="enabled_{listItemId}"></label>
+                                                </div>
+                                            </div>
+                                            <!--ID/Name field-->
+                                            <div class="v-divider"></div>
+                                            <div class="col-3 align-self-start">
+                                                <span>{pluginId}</span>
+                                                <div class="h-divider my-2"></div>
+                                                <span>{pluginName}</span>
+                                            </div>
+                                            <!--Stage-->
+                                            <div class="v-divider"></div>
+                                            <div class="col-1 align-self-start">{pluginStage}</div>
+                                            <!--Type-->
+                                            <div class="v-divider"></div>
+                                            <div class="col-1 align-self-start">{pluginType}</div>
+                                            <!--Operation-->
+                                            <div class="v-divider"></div>
+                                            <div class="col-1 align-self-start">{pluginOperation}</div>
+                                            <!--Description-->
+                                            <div class="v-divider"></div>
+                                            <div class="col align-self-start">
+                                                <a href="#" class="btn btn-secondary btn-circle btn-sm"
+                                                   data-toggle="modal"
+                                                   data-target="#modal_{listItemId}">
+                                                    <i class="fas fa-info"></i>
+                                                </a>
+                                            </div>
+                                            <!--Inputs-->
+                                            <div class="v-divider"></div>
+                                            <div class="col-2 align-self-start" id="inputs_{listItemId}">
+                                                <span>Failed to set plugin inputs</span>
+                                            </div>
+                                            <!--Priority-->
+                                            <div class="v-divider"></div>
+                                            <div class="col-1 align-self-start">
+                                                <a href="#" class="btn btn-secondary btn-circle btn-sm"
+                                                   onClick="shiftPluginPriority('{pluginId}', 'up')"
+                                                   data-toggle="tooltip" data-placement="bottom" title="Move Up">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </a>
+                                                <br>
+                                                {pluginPriority}
+                                                <br>
+                                                <a href="#" class="btn btn-secondary btn-circle btn-sm"
+                                                   onClick="shiftPluginPriority('{pluginId}', 'down')"
+                                                   data-toggle="tooltip" data-placement="bottom" title="Move Down">
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </a>
+                                                <br>
+                                            </div>
+                                            <!--Remove-->
+                                            <div class="v-divider"></div>
+                                            <div class="col align-self-start">
+                                                <a href="#" class="btn btn-danger btn-circle btn-sm"
+                                                   id="remove_{listItemId}">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="modal fade" id="modal_{listItemId}"
+                                             tabindex="-1"
+                                             role="dialog"
+                                             aria-labelledby="PluginInfo"
+                                             aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">
+                                                            {pluginName}
+                                                        </h5>
+                                                        <button type="button" class="close"
+                                                                data-dismiss="modal"
+                                                                aria-label="Close">
+                                                            <span aria-hidden="true">×</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <span>{pluginDescription}</span>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                                data-dismiss="modal">
+                                                            Close
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </template>
+                                <template id="plugin_string_input_template">
+                                    <div class="my-2">
+                                        <div class="form-group">
+                                            <a href="#" class="btn btn-secondary btn-circle btn-sm" data-toggle="modal"
+                                               data-target="#modal_string_{inputId}_{listItemId}">
+                                                <i class="fas fa-info"></i>
+                                            </a>
+                                            <br>
+                                            <label for="string_input_{inputId}_{listItemId}">{inputLabel}</label>
+                                            <input type="text" class="form-control input_{inputId}"
+                                                   id="string_input_{inputId}_{listItemId}"
+                                                   aria-describedby="string_input_help_{inputId}_{listItemId}"
+                                                   placeholder="" value="{inputValue}">
+                                        </div>
+                                        <div class="modal fade" id="modal_string_{inputId}_{listItemId}"
+                                             tabindex="-1"
+                                             role="dialog"
+                                             aria-labelledby=""
+                                             aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close"
+                                                                data-dismiss="modal"
+                                                                aria-label="Close">
+                                                            <span aria-hidden="true">×</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <span>{inputDescription}</span>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                                data-dismiss="modal">
+                                                            Close
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="h-divider my-2"></div>
+                                </template>
+                                <template id="plugin_boolean_input_template">
+                                    <div class="my-2">
+                                        <a href="#" class="btn btn-secondary btn-circle btn-sm" data-toggle="modal"
+                                           data-target="#modal_boolean_{inputId}_{listItemId}">
+                                            <i class="fas fa-info"></i>
+                                        </a>
+                                        <br>
+                                        <div class="mt-1">
+                                            <label for="options_{inputId}_{listItemId}">{inputLabel}</label>
+                                            <select class="custom-select custom-select-sm input_{inputId}"
+                                                    id="options_{inputId}_{listItemId}">
+                                            </select>
+                                        </div>
+                                        <div class="modal fade" id="modal_boolean_{inputId}_{listItemId}"
+                                             tabindex="-1"
+                                             role="dialog"
+                                             aria-labelledby=""
+                                             aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close"
+                                                                data-dismiss="modal"
+                                                                aria-label="Close">
+                                                            <span aria-hidden="true">×</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <span>{inputDescription}</span>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                                data-dismiss="modal">
+                                                            Close
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="h-divider my-2"></div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Plugin Repo List -->
+                    <div class="col-2">
+                        <div class="card shadow mb-4">
+                            <!-- Card Header -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Plugin Repo</h6>
+                                <div class="dropdown no-arrow">
+                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                         aria-labelledby="dropdownMenuLink" style="">
+                                        <div class="dropdown-header">Repo Actions:</div>
+                                        <a class="dropdown-item" href="#"
+                                           onclick="fetchPluginRepoConfig('true')">Update plugins from Tdarr repo</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <small class="form-text text-muted">
+                                    Install plugins for this library by clicking the <code>install</code> button.
+                                </small>
+
+                                <div class="input-group">
+                                    <input id="plugin_repo_filter" type="text"
+                                           class="form-control bg-light border-0 small"
+                                           placeholder="Search plugins..."
+                                           aria-label="Search" aria-describedby="basic-addon2">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button"
+                                                onclick="updateUninstalledPluginsList()">
+                                            <i class="fas fa-search fa-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <ul class="list-group" id="plugin_repo"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<!-- End of Page Wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<!-- Bootstrap core JavaScript-->
+<script src="./static/vendor/jquery/dist/jquery.min.js?{cache_buster}"></script>
+<script src="./static/vendor/bootstrap/dist/js/bootstrap.bundle.min.js?{cache_buster}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="./static/vendor/jquery-easing/jquery.easing.min.js?{cache_buster}"></script>
+
+<!-- Custom scripts for all pages-->
+<script src="./static/js/sb-admin-2.js?{cache_buster}"></script>
+
+<!-- Page level custom scripts -->
+<script src="./static/js/main.js?{cache_buster}"></script>
+
+<script>
+
+    const stringToElement = function (htmlString) {
+        let template = document.createElement('template');
+        template.innerHTML = htmlString;
+        return template.content;
+    }
+
+    const templateRender = function (templateId, data) {
+        const template = document.getElementById(templateId).innerHTML;
+        const pattern = /{\s*(\w+?)\s*}/g;
+        return template.replace(pattern, (_, token) => data[token] || '');
+    }
+
+    const fetchLibraryConfig = function () {
+        jQuery.get('get_config?library_id=' + selectedLibraryID, function (response) {
+            // Trigger update of plugin list
+            installedPluginsList = response.data.config['installed_plugins'];
+            enabledPluginsList = response.data.config['enabled_plugins'];
+            installedPluginData = response.data['plugin_details'];
+            installedPluginSettings = response.data.config['plugin_settings'];
+            updateInstalledPluginsList();
+        });
+    }
+    const saveLibraryConfig = function (triggerPageUpdates) {
+        // Add installed plugin list
+        const jsonString = JSON.stringify({
+            'installed_plugins': installedPluginsList,
+            'plugin_settings': installedPluginSettings,
+        })
+        const encodedData = btoa(jsonString)
+        jQuery.get('set_plugin_config?library_id=' + selectedLibraryID + '&data=' + encodedData, function (response) {
+            if (triggerPageUpdates) {
+                updateInstalledPluginsList();
+            }
+        });
+    }
+    const shiftPluginPriority = function (pluginId, direction) {
+        let newPosition
+        let currentPosition;
+        for (let i = 0; i < installedPluginsList.length; i++) {
+            if (installedPluginsList[i] === pluginId) {
+                currentPosition = i;
+            }
+        }
+        if (direction === 'up') {
+            if (currentPosition !== 0) {
+                newPosition = (currentPosition - 1)
+            }
+        } else if (direction === 'down') {
+            if (currentPosition !== installedPluginsList.length) {
+                newPosition = (currentPosition + 1)
+            }
+        }
+        let element = installedPluginsList[currentPosition];
+        installedPluginsList.splice(currentPosition, 1);
+        installedPluginsList.splice(newPosition, 0, element);
+
+        // Save new order
+        saveLibraryConfig(true);
+    }
+    const updateInstalledPluginsList = function () {
+
+        const removePluginFromStack = function (pluginId, listItemId) {
+            console.log("Removing plugin from stack - " + pluginId)
+            jQuery.get('remove?plugin_id=' + pluginId + '&library_id=' + selectedLibraryID, function (response) {
+                if (!response.success) {
+                    console.error("Failed to remove plugin from stack");
+                    return;
+                }
+                // Trigger update of plugin list
+                fetchLibraryConfig();
+                // Remove the list item
+                document.getElementById('li_' + listItemId).remove();
+            });
+        }
+
+        const savePluginEnabledStatus = function (pluginId, value) {
+            console.log("Toggling plugin '" + pluginId + "' enabled status to " + value)
+            let status = 'disable';
+            if (value) {
+                status = 'enable';
+            }
+            jQuery.get(status + '?plugin_id=' + pluginId + '&library_id=' + selectedLibraryID, function (response) {
+                if (!response.success) {
+                    console.error("Failed to " + status + " plugin");
+                }
+            });
+        }
+
+        const generatePluginInputs = function (pluginData, listItemId) {
+
+            const updatePluginConfig = function (pluginId, inputName, value) {
+                // Update settings dict
+                if (typeof installedPluginSettings[pluginId] === 'undefined') {
+                    installedPluginSettings[pluginId] = {};
+                }
+                installedPluginSettings[pluginId][inputName] = value;
+                // Send updated settings to server
+                saveLibraryConfig(false);
+            }
+
+            let container = document.createElement("div");
+            container.className = 'my-2'
+            // Loop over inputs and create an element for each one
+            for (let i = 0; i < pluginData.Inputs.length; i++) {
+                let input = pluginData.Inputs[i];
+                let inputId = listItemId + '_' + input.name;
+
+                // Set input value to default value. Fetch configured values and override as required
+                let inputValue = input.defaultValue;
+                if (typeof installedPluginSettings[pluginData.id] !== 'undefined') {
+                    let pluginSettings = installedPluginSettings[pluginData.id];
+                    if (typeof pluginSettings[input.name] !== 'undefined') {
+                        inputValue = pluginSettings[input.name];
+                    }
+                }
+
+                let templateData = {
+                    inputId: inputId,
+                    listItemId: listItemId,
+                    inputLabel: input.name,
+                    inputDescription: input.tooltip.replace(/\\n/g, "<br />"),
+                    inputValue: inputValue,
+                }
+
+                if (input.type === 'string') {
+                    let string_input = stringToElement(templateRender('plugin_string_input_template', templateData));
+
+                    // Create a delayed update function for running on key press
+                    let delay = 500;
+                    let delayTimer;
+                    let inputElem = string_input.getElementById('string_input_' + inputId + '_' + listItemId);
+                    const delayedUpdate = function (pluginId, inputName, value) {
+                        clearTimeout(delayTimer);
+                        if (value) {
+                            delayTimer = setTimeout(function () {
+                                updatePluginConfig(pluginId, inputName, value);
+                            }, delay);
+                        }
+                    };
+                    inputElem.addEventListener('keyup', function () {
+                        delayedUpdate(pluginData.id, input.name, this.value);
+                    });
+                    // Also run the update when the input element looses focus
+                    inputElem.addEventListener('focusout', function () {
+                        updatePluginConfig(pluginData.id, input.name, this.value);
+                    });
+
+                    container.append(string_input);
+                } else if (input.type === 'boolean') {
+                    let bool_input = stringToElement(templateRender('plugin_boolean_input_template', templateData));
+                    let options = bool_input.getElementById('options_' + inputId + '_' + listItemId);
+                    for (let i = 0; i < input.inputUI.options.length; i++) {
+                        let value = input.inputUI.options[i];
+                        let option = document.createElement("option");
+                        option.value = value
+                        option.appendChild(document.createTextNode(value));
+                        if (inputValue === value) {
+                            option.selected = true;
+                        }
+                        options.append(option)
+                    }
+
+                    // Add update to save settings whenever the input is modified
+                    options.addEventListener("change", function () {
+                        updatePluginConfig(pluginData.id, input.name, this.value);
+                    });
+
+                    let tmp = document.createElement("template");
+                    tmp.appendChild(bool_input.cloneNode(true));
+
+                    container.append(bool_input);
+                }
+            }
+            return container;
+        }
+
+        // Select the plugin stack list
+        let installedPluginList = document.getElementById("installed_plugins");
+        // Empty it out
+        installedPluginList.innerHTML = "";
+        // Fill the list with the plugins
+        for (let i = 0; i < installedPluginsList.length; i++) {
+            let installedPlugin = installedPluginsList[i];
+            let pluginData = installedPluginData[installedPlugin];
+
+            // TODO: Add column headers
+
+            //let listItemElem = stringToElement(listItemTemplate);
+            let listItemId = 'x_' + (Math.random() + 1).toString(36).substring(7);
+            let templateData = {
+                pluginId: pluginData.id,
+                pluginPriority: (i + 1),
+                pluginName: pluginData.Name,
+                pluginStage: pluginData.Stage,
+                pluginType: pluginData.Type,
+                pluginOperation: pluginData.Operation,
+                pluginDescription: pluginData.Description,
+                listItemId: listItemId,
+            }
+            let listItemElem = stringToElement(templateRender('plugin_stack_template', templateData));
+
+            // Add input items
+            let inputItems = generatePluginInputs(pluginData, listItemId);
+            let inputsContainer = listItemElem.getElementById('inputs_' + listItemId);
+            inputsContainer.innerHTML = "";
+            inputsContainer.appendChild(inputItems);
+
+            // Add list item element to install plugin list
+            installedPluginList.appendChild(listItemElem);
+
+            // Set the checkbox status
+            let pluginEnabled = false;
+            if (enabledPluginsList.indexOf(pluginData.id) >= 0) {
+                pluginEnabled = true;
+            }
+
+            let pluginEnabledToggle = document.getElementById('enabled_' + listItemId)
+            if (pluginEnabled) {
+                pluginEnabledToggle.checked = true;
+            }
+            pluginEnabledToggle.addEventListener("change", function () {
+                savePluginEnabledStatus(pluginData.id, this.checked);
+            });
+
+            // Add on-click event for removing the plugin
+            document.getElementById('remove_' + listItemId).addEventListener("click", function () {
+                removePluginFromStack(pluginData.id, listItemId);
+            });
+        }
+    }
+    const updateUninstalledPluginsList = function () {
+
+        const addPluginToStack = function (pluginId) {
+            console.log("Adding plugin to stack - " + pluginId)
+            jQuery.get('install?plugin_id=' + pluginId + '&library_id=' + selectedLibraryID, function (response) {
+                // Trigger update of plugin list
+                fetchLibraryConfig();
+            });
+        }
+
+        const genPluginInfoModel = function (modalId, name, description) {
+            let modalHtml = '' +
+                '<div class="modal fade" id="' + modalId + '" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"\n' +
+                '     aria-hidden="true">\n' +
+                '    <div class="modal-dialog" role="document">\n' +
+                '        <div class="modal-content">\n' +
+                '            <div class="modal-header">\n' +
+                '              <h5 class="modal-title" id="exampleModalLabel">' + name + '</h5>\n' +
+                '                <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n' +
+                '                    <span aria-hidden="true">&times;</span>\n' +
+                '                </button>\n' +
+                '            </div>\n' +
+                '            <div class="modal-body">\n' +
+                '              <span>' + description + '</span>\n' +
+                '            </div>\n' +
+                '            <div class="modal-footer">\n' +
+                '                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\n' +
+                '            </div>\n' +
+                '        </div>\n' +
+                '    </div>\n' +
+                '</div>';
+
+            return stringToElement(modalHtml);
+        }
+        // Fetch current plugin filter
+        let pluginFilter = document.getElementById('plugin_repo_filter').value;
+        // Select the dropdown list container
+        let pluginRepoList = document.getElementById("plugin_repo");
+        // Empty it out
+        pluginRepoList.innerHTML = "";
+        // Fill the list with the plugins
+        for (let i = 0; i < uninstalledPlugins.length; i++) {
+            let pluginData = uninstalledPlugins[i];
+            // Filter out plugins
+            if (pluginFilter) {
+                // Search for both the ID and Name.
+                // Ensure the search is carried out in lowercase
+                let stringToSearch = pluginData.id.toLowerCase() + ' ' + pluginData.Name.toLowerCase()
+                if (!stringToSearch.includes(pluginFilter.toLowerCase())) {
+                    continue
+                }
+            }
+
+            // Create actions
+            let actions = document.createElement("div");
+            actions.className = 'flex-nowrap';
+
+            let installButton = document.createElement("a");
+            installButton.className = 'd-block btn btn-primary btn-circle btn-sm';
+            installButton.dataset.toggle = "tooltip"
+            installButton.dataset.placement = "bottom"
+            installButton.title = "Install"
+            let installButtonIcon = document.createElement("i");
+            installButtonIcon.className = 'fas fa-arrow-left';
+            installButton.append(installButtonIcon)
+            installButton.onclick = function () {
+                addPluginToStack(pluginData.id);
+            }
+
+            let modalId = 'modal_' + (Math.random() + 1).toString(36).substring(7);
+            let infoButton = document.createElement("a");
+            infoButton.className = 'd-block btn btn-secondary btn-circle btn-sm';
+            infoButton.dataset.toggle = 'modal'
+            infoButton.dataset.target = '#' + modalId;
+            let infoButtonIcon = document.createElement("i");
+            infoButtonIcon.className = 'fas fa-info';
+            infoButton.append(infoButtonIcon)
+
+            let pluginInfoModel = genPluginInfoModel(modalId, pluginData.Name, pluginData.Description)
+
+            actions.append(installButton)
+            actions.append(infoButton)
+
+            // Create name
+            let name = document.createElement("div");
+            name.className = 'pl-3 flex-fill';
+            name.appendChild(document.createTextNode(pluginData.Name));
+
+            // Create list item
+            let row = document.createElement("div");
+            row.className = 'd-flex align-items-center justify-content-start';
+            row.append(actions)
+            row.append(name)
+            let listItem = document.createElement("li");
+            listItem.className = 'list-group-item';
+            listItem.append(row)
+            listItem.append(pluginInfoModel)
+            pluginRepoList.appendChild(listItem);
+        }
+    }
+    const fetchPluginRepoConfig = function (forceUpdate) {
+        jQuery.get('tdarr_repo?force_update=' + forceUpdate, function (response) {
+            if (!response.success) {
+                console.error("Failed to fetch plugin data");
+                return;
+            }
+            uninstalledPlugins = response.data;
+            updateUninstalledPluginsList();
+        });
+    }
+    const initPluginRepoSearch = function () {
+        // Create a delayed update function for running on key press
+        let delay = 500;
+        let delayTimer;
+        let pluginFilter = document.getElementById('plugin_repo_filter');
+        const delayedUpdate = function () {
+            clearTimeout(delayTimer);
+            if (pluginFilter.value) {
+                delayTimer = setTimeout(updateUninstalledPluginsList, delay);
+            }
+        };
+        pluginFilter.addEventListener('keyup', delayedUpdate);
+        // Also run the update when the input element looses focus
+        pluginFilter.addEventListener('focusout', updateUninstalledPluginsList);
+    }
+    // TODO: Move logic out of html ???
+    window.onload = function funLoad() {
+        let selectedLibraryId = document.getElementById("library_id");
+        selectedLibraryId.addEventListener('change', (event) => {
+            // Reload plugin stack
+            fetchLibraryConfig();
+        });
+
+        Main.init();
+
+        // Update the repo list of not-yet-installed plugins
+        fetchPluginRepoConfig(false);
+
+        // Init the plugin repo search box
+        initPluginRepoSearch();
+    }
+</script>
+
+</body>
+
+</html>
