@@ -1,5 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+"""
+    unmanic-plugins.plugin.py
+
+    Written by:               Josh.5 <jsunnex@gmail.com>
+    Date:                     05 Apr 2022, (7:06 PM)
+
+    Copyright:
+        Copyright (C) 2021 Josh Sunnex
+
+        This program is free software: you can redistribute it and/or modify it under the terms of the GNU General
+        Public License as published by the Free Software Foundation, version 3.
+
+        This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+        implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+        for more details.
+
+        You should have received a copy of the GNU General Public License along with this program.
+        If not, see <https://www.gnu.org/licenses/>.
+
+"""
 import base64
 import hashlib
 import json
@@ -7,13 +28,10 @@ import logging
 import os
 import queue
 import shutil
-import subprocess
 import threading
-import time
 import zipfile
 from datetime import datetime, timedelta
 
-import requests
 import uuid
 
 from unmanic.libs.unplugins.settings import PluginSettings
