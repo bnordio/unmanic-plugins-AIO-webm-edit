@@ -17,6 +17,7 @@ plugin_ids=(
     "ffmpeg_file_error_checker"
     "ignore_video_file_over_resolution"
     "ignore_video_file_under_resolution"
+    "replicate_source_file_stats"
     "tdarr_plugin_runner"
     "video_library_stats"
     "video_remuxer_aio_webm"
