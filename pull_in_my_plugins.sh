@@ -15,6 +15,8 @@ plugin_ids=(
     "create_stereo_audio_clone"
     "dts_to_dd"
     "ffmpeg_file_error_checker"
+    "ignore_video_file_over_resolution"
+    "ignore_video_file_under_resolution"
     "tdarr_plugin_runner"
     "video_library_stats"
     "video_remuxer_aio_webm"
