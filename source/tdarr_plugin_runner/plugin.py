@@ -104,6 +104,7 @@ def run_tdarr_plugin(plugin_id, abspath, plugin_parameters_file, plugin_results_
 def update_repo(force=False):
     # Check last installation date
     last_week = datetime.today() - timedelta(days=7)
+    install_data = {}
     install_data_file = os.path.join(tdarr_plugins_path, 'install_data.json')
     try:
         with open(install_data_file) as infile:
@@ -111,9 +112,10 @@ def update_repo(force=False):
     except Exception as e:
         logger.warning("Unable to determine plugin install data: '{}'".format(str(e)))
     # Only update plugins once a week
-    installed_date = datetime.fromisoformat(install_data.get('installed'))
-    if not force and installed_date > last_week:
-        return
+    if not force and install_data.get('installed') is not None:
+        installed_date = datetime.fromisoformat(install_data.get('installed'))
+        if installed_date > last_week:
+            return
     logger.warning("Updating plugins")
     # Download zip file
     repo_zip_url = 'https://github.com/HaveAGitGat/Tdarr_Plugins/archive/refs/heads/master.zip'
