@@ -89,7 +89,7 @@ def fetch_plugin_details(plugin_id):
         raise Exception("Plugin does not exist '{}'".format(plugin_id))
 
     command_params = [
-        os.path.join(plugin_root, 'scripts', 'executor.js'),
+        os.path.join(plugin_root, 'lib', 'executor.js'),
         'details',
         '--id', plugin_id,
     ]

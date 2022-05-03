@@ -77,7 +77,7 @@ class Settings(PluginSettings):
 
 def run_tdarr_plugin(plugin_id, abspath, plugin_parameters_file, plugin_results_file, worker_log):
     command_params = [
-        os.path.join(plugin_root, 'scripts', 'executor.js'),
+        os.path.join(plugin_root, 'lib', 'executor.js'),
         'plugin',
         '--id', plugin_id,
         '--path', abspath,
