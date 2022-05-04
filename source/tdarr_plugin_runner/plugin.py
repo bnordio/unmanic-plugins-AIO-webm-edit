@@ -75,7 +75,7 @@ class Settings(PluginSettings):
         }
 
 
-def run_tdarr_plugin(plugin_id, abspath, plugin_parameters_file, plugin_results_file, worker_log):
+def run_tdarr_plugin(plugin_id, abspath, plugin_parameters_file, plugin_results_file, worker_log, silent=False):
     command_params = [
         os.path.join(plugin_root, 'lib', 'executor.js'),
         'plugin',
@@ -85,9 +85,11 @@ def run_tdarr_plugin(plugin_id, abspath, plugin_parameters_file, plugin_results_
         '--output', plugin_results_file,
     ]
 
-    logger.debug("Running Tdarr plugin ID '{}'".format(plugin_id))
+    if not silent:
+        logger.debug("Running Tdarr plugin ID '{}'".format(plugin_id))
     result_text = tools.exec_node_cmd(command_params)
-    logger.debug(result_text)
+    if not silent:
+        logger.debug(result_text)
     if not os.path.exists(plugin_results_file):
         raise Exception("Results file not found after running Tdarr plugin function '{}'".format(plugin_id))
     with open(plugin_results_file) as infile:
@@ -169,6 +171,17 @@ def fetch_bulk_plugin_details(plugin_ids):
     for plugin_id in plugin_ids:
         plugin_ids_queue.put(plugin_id)
 
+    # Fetch cached results
+    install_data = {}
+    install_data_file = os.path.join(tdarr_plugins_path, 'install_data.json')
+    try:
+        with open(install_data_file) as infile:
+            install_data = json.load(infile)
+        if install_data.get('plugins_list') is not None and install_data.get('plugins_dict') is not None:
+            return install_data.get('plugins_list'), install_data.get('plugins_dict')
+    except Exception as e:
+        logger.warning("Unable to read cache data: '{}'".format(str(e)))
+
     # Start X threads to process plugin data fetching
     thread_list = []
     for thread_id in range(8):
@@ -194,6 +207,12 @@ def fetch_bulk_plugin_details(plugin_ids):
         plugin_data['id'] = plugin_id
         plugins_list.append(plugin_data)
         plugins_dict[plugin_id] = plugin_data
+
+    # Cache results for next time
+    install_data['plugins_list'] = plugins_list
+    install_data['plugins_dict'] = plugins_dict
+    with open(install_data_file, 'w') as f:
+        json.dump(install_data, f, indent=4)
 
     return plugins_list, plugins_dict
 
@@ -239,11 +258,14 @@ def set_global_config(library_id, config):
 
 def request_get_tdarr_repo(data):
     arguments = data.get('arguments', {})
-    force_update = False
-    if arguments.get('force_update') and str(arguments.get('force_update')[0].decode("utf-8")) == 'true':
-        force_update = True
 
-    update_repo(force_update)
+    # Update the repo if requested or if it does not yet exist
+    if arguments.get('force_update') and str(arguments.get('force_update')[0].decode("utf-8")) == 'true':
+        logger.debug("Request was to force an update")
+        update_repo(force=True)
+    elif not os.path.exists(tdarr_plugins_path):
+        logger.debug("No plugins exist... trigger update")
+        update_repo(force=True)
 
     plugins_list, plugins_dict = fetch_all_plugin_details()
     return {
@@ -462,8 +484,12 @@ def request_set_global_config(data):
     # Read the library config
     global_config = get_global_config(library_id)
 
+    global_config['media_info_enabled'] = False
     for gc in arguments:
         if gc == 'library_id':
+            continue
+        if gc == 'media_info_enabled':
+            global_config['media_info_enabled'] = True
             continue
         value = str(arguments[gc][0].decode("utf-8"))
         global_config[gc] = value
@@ -477,18 +503,16 @@ def request_set_global_config(data):
     return {'success': False}
 
 
+def get_enabled_plugins_list(settings):
+    library_config = settings.get_setting('library_config')
+    return library_config.get('enabled_plugins', [])
+
+
 def select_plugin(settings, status):
     selected_plugin = None
-    library_config = settings.get_setting('library_config')
-    installed_plugins = library_config.get('installed_plugins', [])
-    enabled_plugins = library_config.get('enabled_plugins', [])
-
     # Loop over installed plugins in order (as this is the order of priority)
     select_next_plugin = False
-    for plugin in installed_plugins:
-        # Ignore disabled plugins
-        if plugin not in enabled_plugins:
-            continue
+    for plugin in get_enabled_plugins_list(settings):
         # If the status has no previous_plugin set, then this is possibly the first run.
         # Set the selected plugin as the first one in this list
         if status.get('previous_plugin') is None:
@@ -508,6 +532,89 @@ def select_plugin(settings, status):
             break
 
     return selected_plugin
+
+
+def on_library_management_file_test(data):
+    """
+    Runner function - enables additional actions during the library management file tests.
+
+    The 'data' object argument includes:
+        library_id                      - The library that the current task is associated with
+        path                            - String containing the full path to the file being tested.
+        issues                          - List of currently found issues for not processing the file.
+        add_file_to_pending_tasks       - Boolean, is the file currently marked to be added to the queue for processing.
+        priority_score                  - Integer, an additional score that can be added to set the position of the new task in the task queue.
+        shared_info                     - Dictionary, information provided by previous plugin runners. This can be appended to for subsequent runners.
+
+    :param data:
+    :return:
+
+    """
+    # Get the path to the file
+    abspath = data.get('path')
+
+    # Get file probe
+    probe = Probe(logger, allowed_mimetypes=['video'])
+    if 'ffprobe' in data.get('shared_info', {}):
+        if not probe.set_probe(data.get('shared_info', {}).get('ffprobe')):
+            # Failed to set ffprobe from shared info.
+            # Probably due to it being for an incompatible mimetype declared above
+            return
+    elif not probe.file(abspath):
+        # File probe failed, skip the rest of this test
+        return
+    # Set file probe to shared infor for subsequent file test runners
+    if 'shared_info' in data:
+        data['shared_info'] = {}
+    data['shared_info']['ffprobe'] = probe.get_probe()
+
+    # Get settings
+    settings = Settings(library_id=data.get('library_id'))
+
+    # Set library settings paths
+    cache_directory = os.path.dirname(abspath)
+    library_settings = tools.get_library_settings_params(settings, cache_directory, abspath)
+
+    # Loop over all plugins and test if any of them need to run:
+    for plugin_id in get_enabled_plugins_list(settings):
+        # Configure plugin params dictionary
+        file_params = tools.get_file_params(settings, abspath, probe)
+        plugin_inputs = tools.get_plugin_inputs(settings, plugin_id)
+        plugin_parameters = {
+            'file':            file_params,
+            'librarySettings': library_settings,
+            'inputs':          plugin_inputs,
+            'otherArguments':  {
+                'handbrakePath':       cli_tool_paths.get('HandBrakeCLI'),
+                'ffmpegPath':          cli_tool_paths.get('ffmpeg'),
+                'originalLibraryFile': file_params,
+            },
+        }
+
+        # Set a hash unique to this task
+        src_file_hash = hashlib.md5(abspath.encode('utf8')).hexdigest()
+
+        # Create params file for these args. Dump them there for the executor to read
+        plugin_parameters_file = os.path.join(cache_directory, '{}-parameters.json'.format(src_file_hash))
+        with open(plugin_parameters_file, 'w') as param_file:
+            json.dump(plugin_parameters, param_file, indent=4)
+
+        # Execute configured Tdarr plugin by the ID.
+        plugin_results_file = os.path.join(cache_directory, '{}-results.json'.format(src_file_hash))
+        result = run_tdarr_plugin(plugin_id, abspath, plugin_parameters_file, plugin_results_file,
+                                  data.get('worker_log'), silent=True)
+
+        # Check if this plugin needs to process this file
+        if result.get('processFile'):
+            # Mark this file to be added to the pending tasks
+            data['add_file_to_pending_tasks'] = True
+            logger.debug(
+                "File '{}' should be added to task list. Tdarr plugin '{}' flagged it to be processed.".format(abspath,
+                                                                                                               plugin_id))
+            # Don't bother to test any further plugins if at least one of them needs to be run on this file
+            return
+
+    logger.debug("File '{}' does not contain streams require processing.".format(abspath))
 
 
 def on_worker_process(data):
@@ -646,7 +753,7 @@ def render_frontend_panel(data):
 
     :param data:
     :return:
-    
+
     """
     # API
     if data.get('path') in ['tdarr_repo', '/tdarr_repo', '/tdarr_repo/']:

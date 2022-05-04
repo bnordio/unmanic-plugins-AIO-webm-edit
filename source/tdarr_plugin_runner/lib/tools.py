@@ -251,7 +251,10 @@ def get_file_params(settings, abspath, probe):
     exiftool_data = fetch_exiftool_data(abspath)
 
     # Fetch mediainfo data
-    mediainfo_data = fetch_mediainfo_data(abspath)
+    mediainfo_data = {}
+    global_config = settings.get_setting('global_config')
+    if global_config.get('media_info_enabled', False):
+        mediainfo_data = fetch_mediainfo_data(abspath)
 
     # Get file extension
     file_extension = get_file_extension(abspath)

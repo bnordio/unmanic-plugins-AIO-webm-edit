@@ -32,6 +32,18 @@
             cursor: pointer;
         }
 
+        .scangrid {
+            display: grid;
+            grid-template-columns: -webkit-max-content -webkit-max-content;
+            grid-template-columns: max-content max-content;
+            border-radius: 5px;
+        }
+
+        .scangrid, .searchResults {
+            width: 100%;
+            word-wrap: break-word;
+        }
+
         .resGrid {
             display: grid;
             grid-template-columns: auto auto auto auto auto;
@@ -123,6 +135,27 @@
                                 <form>
                                     <input type="hidden" id="library_id" name="library_id" value="0"/>
 
+                                    <div>
+
+                                        <h5>Scanners</h5>
+                                        <br>
+                                        <div class="scangrid">
+                                            <div><p>FFprobe</p></div>
+                                            <div><p>ON</p></div>
+                                            <div><p>ExifTool</p></div>
+                                            <div><p>ON</p></div>
+                                            <div><p>MediaInfo</p></div>
+                                            <div class="custom-control custom-switch" style="margin-left: 10px">
+                                                <input type="checkbox" class="custom-control-input"
+                                                       id="media_info_enabled"
+                                                       name="media_info_enabled" value="">
+                                                <label class="custom-control-label"
+                                                       for="media_info_enabled"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+
                                     <h5>Filters at scan level</h5>
                                     <br>
                                     <p style="margin-bottom:0;">Container types to scan for:</p>
@@ -132,6 +165,7 @@
                                     <br>
                                     <br>
                                     <br>
+
                                     <h5>Filters at transcode queue level</h5>
                                     <br>
                                     <p style="margin-bottom:0;">Resolutions to skip:</p>
@@ -321,11 +355,6 @@
 <script>
     let globalConfig;
 
-    const submitGlobalSettings = function () {
-        console.log("submit")
-        console.log(this)
-    }
-
     const stringToElement = function (htmlString) {
         let template = document.createElement('template');
         template.innerHTML = htmlString;
@@ -338,26 +367,38 @@
         return template.replace(pattern, (_, token) => data[token] || '');
     }
 
+    const updateScannersValues = function () {
+        // Set the checkbox status
+        let mediaInfoEnabled = false;
+        if (globalConfig['media_info_enabled'] === true) {
+            mediaInfoEnabled = true;
+        }
+        let mediaInfoEnabledToggle = document.getElementById('media_info_enabled')
+        if (mediaInfoEnabled) {
+            mediaInfoEnabledToggle.checked = true;
+        }
+    }
+
     const updateResBoundsValues = function () {
         document.querySelectorAll('.resBounds').forEach(function (input) {
             // Now do something with my button
-            console.log(input.name)
-            console.log(globalConfig[input.name])
             if (typeof globalConfig[input.name] !== 'undefined') {
                 // Update input
                 input.value = globalConfig[input.name];
             }
         });
-        console.log()
     }
+
     const fetchGlobalConfig = function () {
         jQuery.get('get_global_config?library_id=' + selectedLibraryID, function (response) {
             // Trigger update of plugin list
             console.log(response.data)
             globalConfig = response.data['global_config'];
             updateResBoundsValues();
+            updateScannersValues();
         });
     }
+
     window.onload = function funLoad() {
         let selectedLibraryId = document.getElementById("library_id");
         selectedLibraryId.addEventListener('change', (event) => {
