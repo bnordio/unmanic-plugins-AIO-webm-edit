@@ -16,6 +16,14 @@ if ! command -v node &> /dev/null; then
     #[[ "${__apt_updated:-false}" == 'false' ]] && apt-get update && __apt_updated=true
     curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
     apt-get install -y nodejs
+    __apt_updated=true
 else
     echo "**** NodeJS already installed ****"
+fi
+if ! command -v exiftool &> /dev/null; then
+    echo "**** Installing ExifTool ****"
+    [[ "${__apt_updated:-false}" == 'false' ]] && apt-get update && __apt_updated=true
+    apt-get install -y libimage-exiftool-perl
+else
+    echo "**** ExifTool already installed ****"
 fi
