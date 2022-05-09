@@ -13,6 +13,7 @@ repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
 
 plugin_ids=(
+    "auto_rotate_images"
     "comskip"
     "convert_subtitle_streams_ass_to_srt"
     "encoder_audio_aac"

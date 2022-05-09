@@ -12,7 +12,6 @@
 repo_root_path=$(readlink -e $(dirname "${BASH_SOURCE[0]}")/)
 
 plugin_ids=(
-    "auto_rotate_images"
     "create_stereo_audio_clone"
     "dts_to_dd"
     "ffmpeg_file_error_checker"
