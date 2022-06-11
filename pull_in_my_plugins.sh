@@ -21,6 +21,7 @@ plugin_ids=(
     "tdarr_plugin_runner"
     "video_library_stats"
     "video_remuxer_aio_webm"
+    "video_transcoder"
 )
 
 pushd "${repo_root_path}" &> /dev/null
