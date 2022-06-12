@@ -123,6 +123,10 @@ class PluginStreamMapper(StreamMapper):
                 }
             return test_resolution
 
+        # Only run if target resolution is set
+        if self.settings.get_setting('target_resolution') in ['source']:
+            return None, None
+
         # Get video width and height
         vid_width = stream_info.get('width', stream_info.get('coded_width', 0))
         vid_height = stream_info.get('height', stream_info.get('coded_height', 0))
@@ -154,7 +158,7 @@ class PluginStreamMapper(StreamMapper):
         if self.settings.get_setting('apply_smart_filters'):
             if self.settings.get_setting('autocrop_black_bars') and self.crop_value:
                 software_filters.append('crop={}'.format(self.crop_value))
-            if self.settings.get_setting('target_resolution'):
+            if self.settings.get_setting('target_resolution') not in ['source']:
                 vid_width, vid_height = self.scale_resolution(stream_info)
                 if vid_width:
                     # Apply scale with only width to keep aspect ratio
@@ -235,7 +239,7 @@ class PluginStreamMapper(StreamMapper):
             if self.settings.get_setting('autocrop_black_bars') and self.crop_value:
                 return True
             # Check if scale filter needs to be applied
-            if self.settings.get_setting('target_resolution'):
+            if self.settings.get_setting('target_resolution') not in ['source']:
                 vid_width, vid_height = self.scale_resolution(stream_info)
                 if vid_width:
                     return True

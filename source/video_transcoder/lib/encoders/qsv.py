@@ -189,6 +189,10 @@ class QsvEncoder:
             "input_type":     "select",
             "select_options": [
                 {
+                    "value": "auto",
+                    "label": "Disabled – Do not apply any tune",
+                },
+                {
                     "value": "film",
                     "label": "Film – use for high quality movie content; lowers deblocking",
                 },
@@ -214,6 +218,7 @@ class QsvEncoder:
                 },
             ],
         }
+        self.__set_default_option(values['select_options'], 'tune')
         if self.settings.get_setting('mode') not in ['standard']:
             values["display"] = "hidden"
         return values
