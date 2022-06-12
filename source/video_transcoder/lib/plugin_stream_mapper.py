@@ -25,22 +25,13 @@ import logging
 
 from video_transcoder.lib import tools
 from video_transcoder.lib.encoders import vaapi
+from video_transcoder.lib.encoders.libx import LibxEncoder
 from video_transcoder.lib.encoders.qsv import QsvEncoder
 from video_transcoder.lib.encoders.vaapi import VaapiEncoder
 from video_transcoder.lib.ffmpeg import StreamMapper
 
 # Configure plugin logger
 logger = logging.getLogger("Unmanic.Plugin.video_transcoder")
-
-basic_mode_defaults = {
-    'libx265': {
-        'max_muxing_queue_size':      None,
-        'encoder_ratecontrol_method': 'LA_ICQ',
-        'constant_quality_scale':     '23',
-        'autocrop_black_bars':        False,
-        'custom_options':             '',
-    }
-}
 
 
 class PluginStreamMapper(StreamMapper):
@@ -94,13 +85,18 @@ class PluginStreamMapper(StreamMapper):
                 self.set_ffmpeg_advanced_options(**advanced_kwargs)
 
             # Check for config specific settings
-            if self.settings.get_setting('autocrop_black_bars'):
-                # Test if the file has black bars
-                self.crop_value = tools.detect_plack_bars(abspath, probe.get_probe())
+            if self.settings.get_setting('apply_smart_filters'):
+                if self.settings.get_setting('autocrop_black_bars'):
+                    # Test if the file has black bars
+                    self.crop_value = tools.detect_plack_bars(abspath, probe.get_probe())
 
         # Build hardware acceleration args based on encoder
         # Note: these are not applied to advanced mode - advanced mode was returned above
-        if self.settings.get_setting('video_encoder') in QsvEncoder.encoders:
+        if self.settings.get_setting('video_encoder') in LibxEncoder.encoders:
+            generic_kwargs, advanced_kwargs = LibxEncoder.generate_default_args(enabled_hw_decoding=False)
+            self.set_ffmpeg_generic_options(**generic_kwargs)
+            self.set_ffmpeg_advanced_options(**advanced_kwargs)
+        elif self.settings.get_setting('video_encoder') in QsvEncoder.encoders:
             generic_kwargs, advanced_kwargs = QsvEncoder.generate_default_args(enabled_hw_decoding=False)
             self.set_ffmpeg_generic_options(**generic_kwargs)
             self.set_ffmpeg_advanced_options(**advanced_kwargs)
@@ -111,10 +107,41 @@ class PluginStreamMapper(StreamMapper):
             # TODO: Disable any options not compatible with this encoder
         # TODO: Add NVENC args
 
-    def build_filter_chain(self, stream_id):
+    def scale_resolution(self, stream_info: dict):
+        def get_test_resolution(settings):
+            target_resolution = settings.get_setting('target_resolution')
+            # Set the target resolution
+            custom_resolutions = settings.get_setting('custom_resolutions')
+            test_resolution = {
+                'width':  tools.resolution_map.get(target_resolution, {}).get('width'),
+                'height': tools.resolution_map.get(target_resolution, {}).get('height'),
+            }
+            if custom_resolutions:
+                test_resolution = {
+                    'width':  settings.get_setting('{}_width'.format(target_resolution)),
+                    'height': settings.get_setting('{}_height'.format(target_resolution)),
+                }
+            return test_resolution
+
+        # Get video width and height
+        vid_width = stream_info.get('width', stream_info.get('coded_width', 0))
+        vid_height = stream_info.get('height', stream_info.get('coded_height', 0))
+
+        # Get the test resolution
+        test_resolution = get_test_resolution(self.settings)
+
+        # Check if the streams resolution is greater than the test resolution
+        if int(vid_width) > int(test_resolution['width']) or int(vid_height) > int(test_resolution['height']):
+            return test_resolution['width'], test_resolution['height']
+
+        # Return none (nothing will be done)
+        return None, None
+
+    def build_filter_chain(self, stream_info, stream_id):
         """
         Builds a complex video filtergraph for the provided stream
 
+        :param stream_info:
         :param stream_id:
         :return:
         """
@@ -123,9 +150,21 @@ class PluginStreamMapper(StreamMapper):
         software_filters = []
         hardware_filters = []
 
-        # Apply software filters first
-        if self.settings.get_setting('autocrop_black_bars') and self.crop_value:
-            software_filters.append('crop={}'.format(self.crop_value))
+        # Apply smart filters first
+        if self.settings.get_setting('apply_smart_filters'):
+            if self.settings.get_setting('autocrop_black_bars') and self.crop_value:
+                software_filters.append('crop={}'.format(self.crop_value))
+            if self.settings.get_setting('target_resolution'):
+                vid_width, vid_height = self.scale_resolution(stream_info)
+                if vid_width:
+                    # Apply scale with only width to keep aspect ratio
+                    software_filters.append('scale={}:-1'.format(vid_width))
+
+        # Apply custom software filters
+        if self.settings.get_setting('apply_custom_filters'):
+            for software_filter in self.settings.get_setting('custom_software_filters').splitlines():
+                if software_filter.strip():
+                    software_filters.append(software_filter.strip())
 
         # Check for hardware encoders that required video filters
         if self.settings.get_setting('video_encoder') in QsvEncoder.encoders:
@@ -149,7 +188,7 @@ class PluginStreamMapper(StreamMapper):
         filtergraph = ''
         count = 1
         for filter in software_filters:
-            # If we are appending to existing filters, separate by a comma
+            # If we are appending to existing filters, separate by a semicolon to start a new chain
             if filtergraph:
                 filtergraph += ';'
             # Add the input for this filter
@@ -162,8 +201,7 @@ class PluginStreamMapper(StreamMapper):
             # Increment filter ID counter
             count += 1
         for filter in hardware_filters:
-            # If we are appending to existing filters, separate by a comma
-            # TODO: Check if these need to be separated chains???
+            # If we are appending to existing filters, separate by a semicolon to start a new chain
             if filtergraph:
                 filtergraph += ';'
             # Add the input for this filter
@@ -190,8 +228,19 @@ class PluginStreamMapper(StreamMapper):
         # Ignore image video streams (will just copy them)
         if stream_info.get('codec_name').lower() in tools.image_video_codecs:
             return False
+
+        # Check if video filters need to be applied (build_filter_chain)
+        if self.settings.get_setting('apply_smart_filters'):
+            # Check if autocrop filter needs to be applied
+            if self.settings.get_setting('autocrop_black_bars') and self.crop_value:
+                return True
+            # Check if scale filter needs to be applied
+            if self.settings.get_setting('target_resolution'):
+                vid_width, vid_height = self.scale_resolution(stream_info)
+                if vid_width:
+                    return True
+
         # TODO: Check if the codec is already the correct format
-        # TODO: Check if video filters need to be applied (build_filter_chain)
         # TODO: Add override if settings say to force encoding
         # All other streams should be custom mapped
         return True
@@ -212,7 +261,7 @@ class PluginStreamMapper(StreamMapper):
             stream_encoding += self.settings.get_setting('custom_options').split()
         else:
             # Build complex filter
-            filter_id, filter_complex = self.build_filter_chain(stream_id)
+            filter_id, filter_complex = self.build_filter_chain(stream_info, stream_id)
             if filter_complex:
                 map_identifier = '[{}]'.format(filter_id)
                 # TODO: Apply the filter directly as it may be possible to have more than one video stream (low priority)
@@ -223,7 +272,10 @@ class PluginStreamMapper(StreamMapper):
             ]
 
             # Add encoder args
-            if self.settings.get_setting('video_encoder') in QsvEncoder.encoders:
+            if self.settings.get_setting('video_encoder') in LibxEncoder.encoders:
+                qsv_encoder = LibxEncoder(self.settings)
+                stream_encoding += qsv_encoder.args(stream_id)
+            elif self.settings.get_setting('video_encoder') in QsvEncoder.encoders:
                 qsv_encoder = QsvEncoder(self.settings)
                 stream_encoding += qsv_encoder.args(stream_id)
             elif self.settings.get_setting('video_encoder') in VaapiEncoder.encoders:

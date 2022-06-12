@@ -28,7 +28,7 @@ TODO:
     - Add support for VAAPI 264
     - Add support for NVENC 264/265
     - Add advanced input forms for building custom ffmpeg queries
-    - Add input form for additional video filters (Or just leave this for the advanced mode)
+    - Add support for source bitrate matching on basic mode
 """
 
 import logging
@@ -37,6 +37,7 @@ import os
 from video_transcoder.lib import plugin_stream_mapper
 from video_transcoder.lib.ffmpeg import Parser, Probe
 from video_transcoder.lib.global_settings import GlobalSettings
+from video_transcoder.lib.encoders.libx import LibxEncoder
 from video_transcoder.lib.encoders.qsv import QsvEncoder
 from video_transcoder.lib.encoders.vaapi import VaapiEncoder
 
@@ -52,6 +53,8 @@ class Settings(PluginSettings):
         super(Settings, self).__init__(*args, **kwargs)
         self.settings = self.__build_settings_object()
         self.encoders = {
+            "libx265":    LibxEncoder(self),
+            "libx264":    LibxEncoder(self),
             "hevc_qsv":   QsvEncoder(self),
             "h264_qsv":   QsvEncoder(self),
             "hevc_vaapi": VaapiEncoder(self),
@@ -95,47 +98,32 @@ class Settings(PluginSettings):
 
         :return:
         """
-        # TODO: Fetch all encoder settings from encoder libs
+        # Fetch all encoder settings from encoder libs
+        libx_options = LibxEncoder.options()
         qsv_options = QsvEncoder.options()
         vaapi_options = VaapiEncoder.options()
         return {
+            **libx_options,
             **qsv_options,
             **vaapi_options
         }
 
     def __build_settings_object(self):
         # Global and main config options
-        global_settings = {
-            "mode":                  "basic",
-            "max_muxing_queue_size": 2048,
-        }
-        encoder_selection = {
-            "video_codec":   "hevc",
-            "video_encoder": "libx265",
-        }
+        global_settings = GlobalSettings.options()
+        main_options = global_settings.get('main_options')
+        encoder_selection = global_settings.get('encoder_selection')
         encoder_settings = self.__encoder_settings_object()
-        advanced_input_options = {
-            "main_options":     "",
-            "advanced_options": "-strict -2\n"
-                                "-max_muxing_queue_size 2048\n",
-            "custom_options":   "-preset slow\n"
-                                "-tune film\n"
-                                "-global_quality 23\n"
-                                "-look_ahead 1\n",
-        }
-        output_settings = {
-            "keep_container":      True,
-            "dest_container":      "mkv",
-            "autocrop_black_bars": False,
-        }
-        filter_settings = {
-        }
+        advanced_input_options = global_settings.get('advanced_input_options')
+        output_settings = global_settings.get('output_settings')
+        filter_settings = global_settings.get('filter_settings')
         return {
-            **global_settings,
+            **main_options,
             **encoder_selection,
             **encoder_settings,
             **advanced_input_options,
             **output_settings,
+            **filter_settings,
         }
 
 
@@ -217,9 +205,6 @@ def on_worker_process(data):
 
     # Get the path to the file
     abspath = data.get('file_in')
-    # TODO: Remove test path
-    abspath = '/library/black_bars_1080p.mp4'
-    print(abspath)
 
     # Get file probe
     probe = Probe(logger, allowed_mimetypes=['video'])
@@ -248,13 +233,10 @@ def on_worker_process(data):
 
         # Get generated ffmpeg args
         ffmpeg_args = mapper.get_ffmpeg_args()
-        print(ffmpeg_args)
 
         # Apply ffmpeg args to command
         data['exec_command'] = ['ffmpeg']
         data['exec_command'] += ffmpeg_args
-        print()
-        print(' '.join(data['exec_command']))
 
         # Set the parser
         parser = Parser(logger)

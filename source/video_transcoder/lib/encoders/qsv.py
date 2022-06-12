@@ -73,12 +73,11 @@ class QsvEncoder:
         stream_encoding = []
 
         # Use defaults for basic mode
-        if self.settings.get_setting('mode') not in ['standard', 'advanced']:
+        if self.settings.get_setting('mode') in ['basic']:
             defaults = self.options()
-            # Use default LA_ICQ mode for HEVC
+            # Use default LA_ICQ mode
             stream_encoding += [
                 '-preset', str(defaults.get('preset')),
-                '-tune', str(defaults.get('tune')),
                 '-global_quality', str(defaults.get('constant_quality_scale')), '-look_ahead', '1',
             ]
             return stream_encoding
@@ -146,119 +145,121 @@ class QsvEncoder:
     def get_preset_form_settings(self):
         values = {
             "label":          "Encoder quality preset",
+            "sub_setting":    True,
             "input_type":     "select",
             "select_options": [
                 {
-                    'value': "veryfast",
-                    'label': "Very fast - Fastest setting, biggest quality drop",
+                    "value": "veryfast",
+                    "label": "Very fast - Fastest setting, biggest quality drop",
                 },
                 {
-                    'value': "faster",
-                    'label': "Faster - Close to medium/fast quality, faster performance",
+                    "value": "faster",
+                    "label": "Faster - Close to medium/fast quality, faster performance",
                 },
                 {
-                    'value': "fast",
-                    'label': "Fast",
+                    "value": "fast",
+                    "label": "Fast",
                 },
                 {
-                    'value': "medium",
-                    'label': "Medium - Balanced performance and quality",
+                    "value": "medium",
+                    "label": "Medium - Balanced performance and quality",
                 },
                 {
-                    'value': "slow",
-                    'label': "Slow",
+                    "value": "slow",
+                    "label": "Slow",
                 },
                 {
-                    'value': "slower",
-                    'label': "Slower - Close to 'very slow' quality, faster performance",
+                    "value": "slower",
+                    "label": "Slower - Close to 'very slow' quality, faster performance",
                 },
                 {
-                    'value': "veryslow",
-                    'label': "Very Slow - Best quality",
+                    "value": "veryslow",
+                    "label": "Very Slow - Best quality",
                 },
             ],
         }
         if self.settings.get_setting('mode') not in ['standard', 'advanced']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_tune_form_settings(self):
         values = {
             "label":          "Tune for a particular type of source or situation",
+            "sub_setting":    True,
             "input_type":     "select",
             "select_options": [
                 {
-                    'value': "film",
-                    'label': "Film – use for high quality movie content; lowers deblocking",
+                    "value": "film",
+                    "label": "Film – use for high quality movie content; lowers deblocking",
                 },
                 {
-                    'value': "animation",
-                    'label': "Animation – good for cartoons; uses higher deblocking and more reference frames",
+                    "value": "animation",
+                    "label": "Animation – good for cartoons; uses higher deblocking and more reference frames",
                 },
                 {
-                    'value': "grain",
-                    'label': "Grain – preserves the grain structure in old, grainy film material",
+                    "value": "grain",
+                    "label": "Grain – preserves the grain structure in old, grainy film material",
                 },
                 {
-                    'value': "stillimage",
-                    'label': "Still image – good for slideshow-like content",
+                    "value": "stillimage",
+                    "label": "Still image – good for slideshow-like content",
                 },
                 {
-                    'value': "fastdecode",
-                    'label': "Fast decode – allows faster decoding by disabling certain filters",
+                    "value": "fastdecode",
+                    "label": "Fast decode – allows faster decoding by disabling certain filters",
                 },
                 {
-                    'value': "zerolatency",
-                    'label': "Zero latency – good for fast encoding and low-latency streaming",
+                    "value": "zerolatency",
+                    "label": "Zero latency – good for fast encoding and low-latency streaming",
                 },
             ],
         }
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
-        if self.settings.get_setting('video_encoder') not in ['libx264', 'libx265', 'h264_qsv', 'hevc_qsv']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_encoder_ratecontrol_method_form_settings(self):
         values = {
             "label":          "Encoder ratecontrol method",
+            "sub_setting":    True,
             "input_type":     "select",
             "select_options": [
                 {
-                    'value': "CQP",
-                    'label': "CQP - Quality based mode using constant quantizer scale",
+                    "value": "CQP",
+                    "label": "CQP - Quality based mode using constant quantizer scale",
                 },
                 {
-                    'value': "ICQ",
-                    'label': "ICQ - Quality based mode using intelligent constant quality",
+                    "value": "ICQ",
+                    "label": "ICQ - Quality based mode using intelligent constant quality",
                 },
                 {
-                    'value': "LA_ICQ",
-                    'label': "LA_ICQ - Quality based mode using intelligent constant quality with lookahead",
+                    "value": "LA_ICQ",
+                    "label": "LA_ICQ - Quality based mode using intelligent constant quality with lookahead",
                 },
                 {
-                    'value': "VBR",
-                    'label': "VBR - Bitrate based mode using variable bitrate",
+                    "value": "VBR",
+                    "label": "VBR - Bitrate based mode using variable bitrate",
                 },
                 {
-                    'value': "LA",
-                    'label': "LA - Bitrate based mode using VBR with lookahead",
+                    "value": "LA",
+                    "label": "LA - Bitrate based mode using VBR with lookahead",
                 },
                 {
-                    'value': "CBR",
-                    'label': "CBR - Bitrate based mode using constant bitrate",
+                    "value": "CBR",
+                    "label": "CBR - Bitrate based mode using constant bitrate",
                 },
             ]
         }
         self.__set_default_option(values['select_options'], 'encoder_ratecontrol_method', default_option='LA_ICQ')
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_constant_quantizer_scale_form_settings(self):
         # Lower is better
         values = {
             "label":          "Constant quantizer scale",
+            "sub_setting":    True,
             "input_type":     "slider",
             "slider_options": {
                 "min": 0,
@@ -266,15 +267,16 @@ class QsvEncoder:
             },
         }
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         if self.settings.get_setting('encoder_ratecontrol_method') != 'CQP':
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_constant_quality_scale_form_settings(self):
         # Lower is better
         values = {
             "label":          "Constant quality scale",
+            "sub_setting":    True,
             "input_type":     "slider",
             "slider_options": {
                 "min": 1,
@@ -282,14 +284,15 @@ class QsvEncoder:
             },
         }
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         if self.settings.get_setting('encoder_ratecontrol_method') not in ['LA_ICQ', 'ICQ']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_average_bitrate_form_settings(self):
         values = {
             "label":          "Bitrate",
+            "sub_setting":    True,
             "input_type":     "slider",
             "slider_options": {
                 "min":    1,
@@ -298,7 +301,7 @@ class QsvEncoder:
             },
         }
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         if self.settings.get_setting('encoder_ratecontrol_method') not in ['VBR', 'LA', 'CBR']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values

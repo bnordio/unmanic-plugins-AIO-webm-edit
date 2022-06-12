@@ -167,35 +167,35 @@ class VaapiEncoder:
             "input_type":     "select",
             "select_options": [
                 {
-                    'value': "CQP",
-                    'label': "CQP - Quality based mode using constant quantizer scale",
+                    "value": "CQP",
+                    "label": "CQP - Quality based mode using constant quantizer scale",
                 },
                 {
-                    'value': "ICQ",
-                    'label': "ICQ - Quality based mode using intelligent constant quality",
+                    "value": "ICQ",
+                    "label": "ICQ - Quality based mode using intelligent constant quality",
                 },
                 {
-                    'value': "CBR",
-                    'label': "CBR - Bitrate based mode using constant bitrate",
+                    "value": "CBR",
+                    "label": "CBR - Bitrate based mode using constant bitrate",
                 },
                 {
-                    'value': "VBR",
-                    'label': "VBR - Bitrate based mode using variable bitrate",
+                    "value": "VBR",
+                    "label": "VBR - Bitrate based mode using variable bitrate",
                 },
             ]
         }
         # TODO: Add support for these:
         # {
-        #     'value': "QVBR",
-        #     'label': "QVBR - Quality defined variable bitrate mode",
+        #     "value": "QVBR",
+        #     "label": "QVBR - Quality defined variable bitrate mode",
         # },
         # {
-        #     'value': "AVBR",
-        #     'label': "AVBR - Average variable bitrate mode",
+        #     "value": "AVBR",
+        #     "label": "AVBR - Average variable bitrate mode",
         # },
         self.__set_default_option(values['select_options'], 'encoder_ratecontrol_method', default_option='CQP')
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_constant_quantizer_scale_form_settings(self):
@@ -209,9 +209,9 @@ class VaapiEncoder:
             },
         }
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         if self.settings.get_setting('encoder_ratecontrol_method') != 'CQP':
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_constant_quality_scale_form_settings(self):
@@ -225,9 +225,9 @@ class VaapiEncoder:
             },
         }
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         if self.settings.get_setting('encoder_ratecontrol_method') not in ['LA_ICQ', 'ICQ']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values
 
     def get_average_bitrate_form_settings(self):
@@ -241,7 +241,7 @@ class VaapiEncoder:
             },
         }
         if self.settings.get_setting('mode') not in ['standard']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         if self.settings.get_setting('encoder_ratecontrol_method') not in ['VBR', 'LA', 'CBR']:
-            values["display"] = 'hidden'
+            values["display"] = "hidden"
         return values

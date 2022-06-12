@@ -62,6 +62,54 @@ image_video_codecs = [
     'xwd',
 ]
 
+resolution_map = {
+    '480p_sdtv':   {
+        'width':  854,
+        'height': 480,
+        'label':  "480p (SDTV)",
+    },
+    '576p_sdtv':   {
+        'width':  1024,
+        'height': 576,
+        'label':  "576p (SDTV)",
+    },
+    '720p_hdtv':   {
+        'width':  1280,
+        'height': 720,
+        'label':  "720p (HDTV)",
+    },
+    '1080p_hdtv':  {
+        'width':  1920,
+        'height': 1080,
+        'label':  "1080p (HDTV)",
+    },
+    'dci_2k_hdtv': {
+        'width':  2048,
+        'height': 1080,
+        'label':  "DCI 2K (HDTV)",
+    },
+    '1440p':       {
+        'width':  2560,
+        'height': 1440,
+        'label':  "1440p (WQHD)",
+    },
+    '4k_uhd':      {
+        'width':  3840,
+        'height': 2160,
+        'label':  "4K (UHD)",
+    },
+    'dci_4k':      {
+        'width':  4096,
+        'height': 2160,
+        'label':  "DCI 4K",
+    },
+    '8k_uhd':      {
+        'width':  8192,
+        'height': 4608,
+        'label':  "8k (UHD)",
+    },
+}
+
 
 def get_video_stream_data(streams):
     width = 0
@@ -122,7 +170,6 @@ def detect_plack_bars(abspath, probe_data):
     else:
         logger.error("Unable to parse cropdetect from FFmpeg on file {}.".format(abspath))
 
-    print(crop_value)
     if crop_value:
         crop_width = crop_value.split(':')[0]
         crop_height = crop_value.split(':')[1]

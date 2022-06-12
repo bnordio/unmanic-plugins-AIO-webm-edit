@@ -349,6 +349,9 @@ class StreamMapper(object):
     def set_output_null(self):
         """Set the output container to NULL for the FFmpeg args"""
         self.output_file = '-'
+        if os.name == "nt":
+            # Windows uses NUL instead
+            self.output_file = 'NUL'
         main_options = {
             "-f": 'null',
         }
