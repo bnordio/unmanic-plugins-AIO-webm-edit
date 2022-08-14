@@ -255,7 +255,7 @@ class PluginStreamMapper(StreamMapper):
             if stream_info.get('codec_name').lower() not in [self.settings.get_setting('audio_codec')]:
                 return True
         elif stream_info.get('codec_type').lower() == "subtitle":
-            if stream_info.get('codec_name').lower() not in [self.settings.get_setting('audio_codec')]:
+            if stream_info.get('codec_name').lower() not in [self.settings.get_setting('subtitle_codec')]:
                 return True
 
         return False
