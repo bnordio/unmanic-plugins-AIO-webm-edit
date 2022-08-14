@@ -543,7 +543,7 @@ class PluginStreamMapper(StreamMapper):
     #
     def __webvvt_stream_encoding_args(self, stream_info, stream_id):
         return [
-            '-c:a:{}'.format(stream_id), 'webvtt'
+            '-c:s:{}'.format(stream_id), 'webvtt'
         ]
 
 
